@@ -1,0 +1,3 @@
+forge-std/=lib/forge-std/src/
+plank-foundry-deployer/=lib/plank-foundry-deployer/src/
+plank-monorepo/=lib/plank-monorepo/
