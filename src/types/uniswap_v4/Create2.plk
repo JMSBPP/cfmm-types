@@ -1,0 +1,28 @@
+import std::core::addr::{addr, addr_from_u256, cast_addr};
+import std::fixedbytes::bytes32;
+import std::membytes::{membytes_new, membytes_concat};
+import std::regions::{keccak256, embed_as, memory};
+
+// CREATE2: keccak256(0xff ++ deployer(20) ++ salt(32) ++ initCodeHash(32))[12:32]
+// Uses embed_as for 0xff — @mstore8 does not reliably write single-byte prefixes in current std.
+const compute_create2_address = fn (deployer: addr, salt: bytes32, init_code_hash: bytes32) addr {
+    let ff = embed_as(hex"ff", memory);
+
+    let deployer_bytes = membytes_new(20);
+    let deployer_word = membytes_new(32);
+    let dw = deployer_word.ptr;
+    @mstore32(dw, cast_addr(deployer, u256));
+    @mcopy(deployer_bytes.ptr, dw +% 12, 20);
+
+    let salt_bytes = membytes_new(32);
+    @mstore32(salt_bytes.ptr, salt.raw);
+
+    let hash_bytes = membytes_new(32);
+    @mstore32(hash_bytes.ptr, init_code_hash.raw);
+
+    let stage1 = membytes_concat(ff, deployer_bytes);
+    let stage2 = membytes_concat(stage1, salt_bytes);
+    let preimage = membytes_concat(stage2, hash_bytes);
+    let digest = keccak256(preimage);
+    addr_from_u256(digest.raw & 0xffffffffffffffffffffffffffffffffffffffff)
+};
