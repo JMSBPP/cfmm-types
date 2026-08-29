@@ -7,11 +7,11 @@ import {MinimalHook} from "../../mocks/MinimalHook.sol";
 import {Hooks} from "@uniswap/v4-core/src/libraries/Hooks.sol";
 
 contract HookTest is PlankTestBase, Deployers {
-    address internal harness;
+    address internal hookMiner;
 
     function setUp() public {
         deployFreshManagerAndRouters();
-        harness = deployPlank("test/types/uniswap_v4/HookHarness.plk");
+        hookMiner = deployPlank("src/types/uniswap_v4/Hook.plk");
     }
 
     function test__deploy__mineAndCreate2Hook() public {
@@ -20,7 +20,7 @@ contract HookTest is PlankTestBase, Deployers {
         bytes memory creationCode = type(MinimalHook).creationCode;
         bytes memory constructorArgs = abi.encode(num, flags);
 
-        (bool ok, bytes memory r) = harness.call(
+        (bool ok, bytes memory r) = hookMiner.call(
             abi.encodeWithSignature("mineAndDeployHook(uint256,bytes,bytes)", uint256(flags), creationCode, constructorArgs)
         );
         require(ok, "mineAndDeployHook reverted");

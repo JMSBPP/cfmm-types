@@ -1,14 +1,14 @@
-import std::core::addr::{
-    addr, addr_eq, cast_addr, compute_create2_address, raw_create2, msg_sender
-};
-import std::core::uint::{u160, cast_uint};
+import std::constructor::return_runtime;
+import std::abi::{abi_encode, abi_decode};
+import std::core::addr::{addr, addr_eq, cast_addr, raw_create2, unsafe_from_u256};
 import std::option::unwrap as option_unwrap;
 import std::fixedbytes::{bytes32, bytes32_from_u256};
-import std::membytes::{membytes, membytes_concat};
+import std::membytes::{membytes, membytes_concat, membytes_new, membytes_from_ptr};
 import std::regions::keccak256;
 import std::error::require;
 import types::protocol_integrations::Venue::*;
 import types::uniswap_v4::HookFlags::*;
+import types::uniswap_v4::Create2::compute_create2_address;
 
 const Hook = fn (comptime V: type) type {
     if !is_venue(V) {
@@ -31,6 +31,26 @@ const HookResult = struct {
 const HookDeployResult = struct {
     deployed: addr,
     flag_bits: u256,
+};
+
+const MineAndDeployArgs = struct {
+    flags: u256,
+    creation_code: membytes,
+    constructor_args: membytes,
+};
+
+const MineDeployRet = struct {
+    deployed: u256,
+    flag_bits: u256,
+};
+
+const PredictArgs = struct {
+    salt: u256,
+    init_code_hash: u256,
+};
+
+const PredictRet = struct {
+    predicted: u256,
 };
 
 const MAX_LOOP = 160_444;
@@ -71,3 +91,41 @@ const hook_mine_and_deploy = fn (
     require(addr_eq(deployed, mined.hook_addr));
     HookDeployResult { deployed: deployed, flag_bits: hook_flag_bits(flags) }
 };
+
+init {
+    return_runtime();
+}
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == 0xa6edb614 {
+        let calldata_size = @evm_calldatasize();
+        let buf = membytes_new(calldata_size);
+        @evm_calldatacopy(buf.ptr, 0, calldata_size);
+        let args = abi_decode(MineAndDeployArgs, membytes_from_ptr(buf.ptr + 4, calldata_size - 4));
+        let result = hook_mine_and_deploy(
+            unsafe_from_u256(@evm_address_this()),
+            hook_flags(args.flags),
+            args.creation_code,
+            args.constructor_args
+        );
+        let out = abi_encode(MineDeployRet {
+            deployed: cast_addr(result.deployed, u256),
+            flag_bits: result.flag_bits
+        });
+        @evm_return(out.ptr, out.length);
+    } else if selector == 0x193f2cd0 {
+        let calldata_size = @evm_calldatasize();
+        let buf = membytes_new(calldata_size);
+        @evm_calldatacopy(buf.ptr, 0, calldata_size);
+        let args = abi_decode(PredictArgs, membytes_from_ptr(buf.ptr + 4, calldata_size - 4));
+        let predicted = compute_create2_address(
+            unsafe_from_u256(@evm_address_this()),
+            bytes32_from_u256(args.salt),
+            bytes32 { raw: args.init_code_hash }
+        );
+        let out = abi_encode(PredictRet { predicted: cast_addr(predicted, u256) });
+        @evm_return(out.ptr, out.length);
+    }
+    @evm_stop();
+}
