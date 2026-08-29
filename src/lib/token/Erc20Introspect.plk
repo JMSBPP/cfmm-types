@@ -1,5 +1,5 @@
 import std::constructor::return_runtime;
-import std::core::addr::{addr_from_u256, cast_addr};
+import std::core::addr::{addr, addr_from_u256, cast_addr};
 import std::error::require;
 
 const SEL_BALANCE_OF = 0x70a08231;
