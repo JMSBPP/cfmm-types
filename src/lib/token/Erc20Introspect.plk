@@ -1,0 +1,14 @@
+import std::constructor::return_runtime;
+import std::core::addr::{addr_from_u256};
+
+const SEL_VERIFY_ERC20 = 0x980a47e6;
+
+init { return_runtime(); }
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == SEL_VERIFY_ERC20 {
+        @evm_stop();
+    }
+    @evm_stop();
+}
