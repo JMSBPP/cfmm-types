@@ -76,8 +76,12 @@ jobs:
 
       - run: |
           git submodule sync --recursive
-          git submodule update --init lib/forge-std lib/v4-core lib/v4-hooks-public
+          git submodule update --init lib/forge-std lib/v4-core lib/v4-hooks-public \
+            lib/plank-monorepo lib/plank-foundry-deployer
           git -C lib/v4-core submodule update --init --recursive
+
+      - name: Plank toolchain
+        run: make plank-toolchain
 
       - name: forge build
         run: forge build --via-ir --offline
@@ -85,8 +89,24 @@ jobs:
       - name: forge test
         run: forge test --via-ir --offline
 
+  plank:
+    needs: [approve]
+    runs-on: [self-hosted, cfmm-build]
+    timeout-minutes: 15
+    env:
+      GIT_TERMINAL_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          persist-credentials: false
+      - run: git submodule sync --recursive
+      - run: git submodule update --init lib/plank-monorepo lib/plank-foundry-deployer
+      - run: make plank-toolchain
+      - run: make compile-plank
+
   gate:
-    needs: [approve, forge]
+    needs: [approve, forge, plank]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -96,7 +116,7 @@ jobs:
             success) ;;
             *) echo "::error::approve was '${{ needs.approve.result }}' — environment review did not pass"; exit 1;;
           esac
-          for x in '${{ needs.forge.result }}'; do
+          for x in '${{ needs.forge.result }}' '${{ needs.plank.result }}'; do
             case "$x" in success|skipped) ;; *) echo "::error::a gate job result was '$x'"; exit 1;; esac
           done
           echo "all gate jobs green"
