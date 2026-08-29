@@ -1,8 +1,7 @@
 # cfmm-types — agent guide
 
-Shared **Plank type definitions** for the CFMM stack. Consumed by protocol repos
-(e.g. `cfmm-vol-markets`). The build is **Foundry + the Plank toolchain** once Plank sources
-land here; the current scaffold is Foundry-only (`Counter.sol`).
+Shared **Plank type definitions** and vendored Uniswap v4 utilities for the CFMM stack.
+Consumed by protocol repos (e.g. `cfmm-vol-markets`). Build: **Foundry** (+ Plank when wired).
 
 ## Remotes
 
@@ -13,62 +12,59 @@ land here; the current scaffold is Foundry-only (`Counter.sol`).
 
 Never push directly to `d2p-finance/*`.
 
+## Branches
+
+| Branch | Role |
+|--------|------|
+| `develop` | integration — PR merges only; **direct push forbidden** |
+| `master` | upstream release line — protected; changes via PR from `develop` |
+
 ## Project layout
 
 ```
 src/              Plank (*.plk) + Solidity (*.sol) type sources
 test/             Foundry tests (*.t.sol) + Plank harnesses (*Harness.plk)
-lib/              submodule dependencies (forge-std, plank-monorepo, …)
+lib/              submodule dependencies (forge-std, v4-core, v4-hooks-public, …)
 .spec/            agent specs + implementation rules (gitignored — see below)
 TODO.md           internal phase tracker (gitignored)
 ```
 
 ## Working in this project
 
-- **Build/test (when Plank is wired):** `make plank-toolchain`, `make compile-plank`,
-  `forge test --via-ir --offline`. Until then: `forge build`, `forge test`.
-- **Default branch:** `master` on both fork and upstream.
+- **Local compile is for debugging only** — agents do not sign off work from `forge build` /
+  `forge test`. Verification is **push → GitHub Actions** (see Contributing).
+- **Default integration branch:** `develop`.
 - **Implementation rules:** read [`.spec/README.md`](./.spec/README.md) before any spec work.
-  Specs under `.spec/*.md` are authoritative for scope; `TODO.md` tracks deferred follow-ons.
 
 ## Contributing / workflow
 
 **Every spec phase uses a dedicated git worktree** — see `.spec/README.md` (mandatory). Do not
-implement inline on `master`.
+implement inline on `develop`.
 
-- Base branch: latest `origin/master`.
+- Base branch: latest `origin/develop`.
 - Branch prefixes: `type/<slug>`, `feat/<slug>`, `fix/<slug>`, etc.
-- Before RED commits: open a tracking issue and PR on `JMSBPP/cfmm-types` (details in `.spec/README.md`).
-- **Teardown after merge:** checkout `master`, confirm branch merged, `git branch -d <branch>` locally
-  and delete on origin. Never `git branch -D` — if `-d` refuses, unmerged commits remain.
+- Before RED commits: open a tracking issue and PR on `JMSBPP/cfmm-types`.
+- **Teardown after merge:** checkout `develop`, `git branch -d <branch>`, delete on origin.
 
-**CI is the validation gate, not your local machine.** Do not sign off work from a local
-`forge build` / `forge test` / `make compile-plank`. Push the worktree branch and read the GitHub
-Actions result:
+**CI is the validation gate, not your local machine.**
 
-| When | Workflow |
-|------|----------|
-| Feature / worktree branches | `.github/workflows/push-build.yml` (to add — see `TODO.md` §4) |
-| PR → `master` | `.github/workflows/master-gate.yml` (to add) or current `test.yml` until gates land |
+| When | Workflow | Trigger |
+|------|----------|---------|
+| Worktree / feature branches | `push-build.yml` | push to any branch **except** `develop` |
+| PR → `develop` | `develop-gate.yml` | required check: `gate` |
 
-Until `push-build.yml` exists, `test.yml` runs on push/PR — still treat the **remote** run as
-the verification act, not local output.
+Worktree loop: commit → `git push -u origin <branch>` → read `push-build.yml` on Actions.
 
-**Code chunks are approved before they are committed.** Present every source chunk to the
-maintainer with **approve** / **modify** options; wait for the answer, then commit. Auto-edit
-permission is not approval.
+**Code chunks are approved before commit** (approve / modify). Auto-edit is not approval.
 
-**Tests are written FIRST, RED, for any new type or behaviour.** Harness + Foundry suite before
-implementation; first push intentionally red. Every comptime branch must be instantiated in tests
-(Plank only type-checks branches something uses).
+**Tests FIRST, RED** for new types or behaviour. First push intentionally red.
 
 ## Docs
 
 - Foundry — https://book.getfoundry.sh
-- Plank toolchain — `lib/plank-monorepo` (when submodule is added)
 - Protocol spec — `d2p-finance/cfmm-vol-markets-spec` (cross-repo reference)
 
 ## Internal (gitignored)
 
-- [`.spec/`](./.spec/README.md) — agent implementation guidelines and spec queue
-- `TODO.md` — deferred items and CI checklist
+- [`.spec/`](./.spec/README.md) — implementation guidelines and spec queue
+- `TODO.md` — deferred items

@@ -1,0 +1,7 @@
+# THE Foundry toolchain both CI workflows resolve. Requirement CI-05.
+#
+# Both workflows source THIS file via `. ./.github/foundry-version`.
+
+FOUNDRY_VERSION=v1.5.1
+FOUNDRY_COMMIT=b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2
+FOUNDRYUP_INSTALLER_COMMIT=a27902ef04dcb43061fabf343365cb5afc95fc48
