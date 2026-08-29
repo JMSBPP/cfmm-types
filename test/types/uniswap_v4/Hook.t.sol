@@ -2,13 +2,15 @@
 pragma solidity ^0.8.26;
 
 import {PlankTestBase} from "../../PlankTestBase.sol";
+import {Deployers} from "@uniswap/v4-core/test/utils/Deployers.sol";
 import {MinimalHook} from "../../mocks/MinimalHook.sol";
 import {Hooks} from "@uniswap/v4-core/src/libraries/Hooks.sol";
 
-contract HookTest is PlankTestBase {
+contract HookTest is PlankTestBase, Deployers {
     address internal harness;
 
     function setUp() public {
+        deployFreshManagerAndRouters();
         harness = deployPlank("test/types/uniswap_v4/HookHarness.plk");
     }
 

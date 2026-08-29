@@ -1,7 +1,7 @@
 import std::constructor::return_runtime;
 import std::abi::{abi_encode, abi_decode};
 import std::membytes::{membytes, membytes_from_ptr, membytes_new};
-import std::core::addr::{cast_addr, msg_sender};
+import std::core::addr::{cast_addr, unsafe_from_u256};
 import types::uniswap_v4::Hook::*;
 import types::uniswap_v4::HookFlags::*;
 
@@ -28,7 +28,7 @@ run {
         @evm_calldatacopy(buf.ptr, 0, calldata_size);
         let args = abi_decode(MineAndDeployArgs, membytes_from_ptr(buf.ptr + 4, calldata_size - 4));
         let result = hook_mine_and_deploy(
-            msg_sender(),
+            unsafe_from_u256(@evm_address_this()),
             hook_flags(args.flags),
             args.creation_code,
             args.constructor_args
