@@ -1,14 +1,61 @@
 import std::constructor::return_runtime;
-import std::core::addr::{addr_from_u256};
+import std::core::addr::{addr_from_u256, cast_addr};
+import std::error::require;
 
+const SEL_BALANCE_OF = 0x70a08231;
+const SEL_TRANSFER = 0xa9059cbb;
+const SEL_TRANSFER_FROM = 0x23b872dd;
+const ERR_INSUFFICIENT_BALANCE = 0xe450d38c;
+const ERR_INSUFFICIENT_ALLOWANCE = 0xfb8f41b2;
 const SEL_VERIFY_ERC20 = 0x980a47e6;
+
+const verify_erc20 = fn (token: addr, probe: addr) void {
+    let tu = cast_addr(token, u256);
+    let pu = cast_addr(probe, u256);
+
+    let bal_cd = @malloc_uninit(36);
+    @mstore4(bal_cd, SEL_BALANCE_OF);
+    @mstore32(bal_cd +% 4, pu);
+    let bal_ret = @malloc_uninit(32);
+    require(@evm_staticcall(@evm_gas(), tu, bal_cd, 36, bal_ret, 32));
+
+    let xfer_cd = @malloc_uninit(68);
+    @mstore4(xfer_cd, SEL_TRANSFER);
+    @mstore32(xfer_cd +% 4, pu);
+    @mstore32(xfer_cd +% 36, 1);
+    let xfer_ret = @malloc_uninit(32);
+    let xfer_ok = @evm_call(@evm_gas(), tu, 0, xfer_cd, 68, xfer_ret, 32);
+    require(!xfer_ok);
+    let xfer_rd_sz = @evm_returndatasize();
+    require(xfer_rd_sz >= 4);
+    let xfer_rd = @malloc_uninit(xfer_rd_sz);
+    @evm_returndatacopy(xfer_rd, 0, xfer_rd_sz);
+    require(@evm_shr(224, @mload32(xfer_rd)) == ERR_INSUFFICIENT_BALANCE);
+
+    let tf_cd = @malloc_uninit(100);
+    @mstore4(tf_cd, SEL_TRANSFER_FROM);
+    @mstore32(tf_cd +% 4, pu);
+    @mstore32(tf_cd +% 36, pu);
+    @mstore32(tf_cd +% 68, 1);
+    let tf_ret = @malloc_uninit(32);
+    let tf_ok = @evm_call(@evm_gas(), tu, 0, tf_cd, 100, tf_ret, 32);
+    require(!tf_ok);
+    let tf_rd_sz = @evm_returndatasize();
+    require(tf_rd_sz >= 4);
+    let tf_rd = @malloc_uninit(tf_rd_sz);
+    @evm_returndatacopy(tf_rd, 0, tf_rd_sz);
+    require(@evm_shr(224, @mload32(tf_rd)) == ERR_INSUFFICIENT_ALLOWANCE);
+};
 
 init { return_runtime(); }
 
 run {
     let selector = @evm_shr(224, @evm_calldataload(0));
     if selector == SEL_VERIFY_ERC20 {
-        @evm_stop();
+        let token = addr_from_u256(@evm_calldataload(4));
+        let probe = addr_from_u256(@evm_calldataload(36));
+        verify_erc20(token, probe);
+        @evm_return(@malloc_uninit(0), 0);
     }
     @evm_stop();
 }
