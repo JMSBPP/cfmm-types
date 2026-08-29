@@ -10,5 +10,9 @@ out/
 # Docs
 docs/
 
+# Internal agent tracking (not committed)
+TODO.md
+.spec/
+
 # Dotenv file
 .env
