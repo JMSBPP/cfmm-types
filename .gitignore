@@ -8,8 +8,10 @@ build/plank/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
-# Docs
-docs/
+# Docs (except committed superpowers specs)
+docs/*
+!docs/superpowers/
+!docs/superpowers/**
 
 # Internal agent tracking (not committed)
 TODO.md
