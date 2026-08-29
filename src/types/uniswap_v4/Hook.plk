@@ -1,0 +1,73 @@
+import std::core::addr::{
+    addr, addr_eq, cast_addr, compute_create2_address, raw_create2, msg_sender
+};
+import std::core::uint::{u160, cast_uint};
+import std::option::unwrap as option_unwrap;
+import std::fixedbytes::{bytes32, bytes32_from_u256};
+import std::membytes::{membytes, membytes_concat};
+import std::regions::keccak256;
+import std::error::require;
+import types::protocol_integrations::Venue::*;
+import types::uniswap_v4::HookFlags::*;
+
+const Hook = fn (comptime V: type) type {
+    if !is_venue(V) {
+        @compile_error("Hook: V must be V4, V3 or Algebra");
+    }
+    if V != V4 {
+        @compile_error("Hook: only V4 supported in this phase");
+    }
+    return struct V {
+        hook_addr: addr,
+        hook_salt: bytes32,
+    };
+};
+
+const HookResult = struct {
+    hook_addr: addr,
+    hook_salt: bytes32,
+};
+
+const HookDeployResult = struct {
+    deployed: addr,
+    flag_bits: u256,
+};
+
+const MAX_LOOP = 160_444;
+
+const hook_mine = fn (
+    deployer: addr,
+    flags: HookFlags,
+    creation_code: membytes,
+    constructor_args: membytes,
+) HookResult {
+    let init_code = membytes_concat(creation_code, constructor_args);
+    let init_hash = keccak256(init_code);
+    let target = hook_flag_bits(flags);
+
+    let mut salt = 0;
+    while salt < MAX_LOOP {
+        let salt_word = bytes32_from_u256(salt);
+        let candidate = compute_create2_address(deployer, salt_word, init_hash);
+        let masked = cast_addr(candidate, u256) & 0x3FFF;
+        let code_size = @evm_extcodesize(cast_addr(candidate, u256));
+        if (masked == target) & (code_size == 0) {
+            return HookResult { hook_addr: candidate, hook_salt: salt_word };
+        }
+        salt = salt + 1;
+    }
+    @evm_revert(@malloc_uninit(0), 0);
+};
+
+const hook_mine_and_deploy = fn (
+    deployer: addr,
+    flags: HookFlags,
+    creation_code: membytes,
+    constructor_args: membytes,
+) HookDeployResult {
+    let mined = hook_mine(deployer, flags, creation_code, constructor_args);
+    let init_code = membytes_concat(creation_code, constructor_args);
+    let deployed = option_unwrap(raw_create2(0, init_code, mined.hook_salt));
+    require(addr_eq(deployed, mined.hook_addr));
+    HookDeployResult { deployed: deployed, flag_bits: hook_flag_bits(flags) }
+};

@@ -1,0 +1,43 @@
+import std::constructor::return_runtime;
+import std::abi::{abi_encode, abi_decode};
+import std::membytes::{membytes, membytes_from_ptr, membytes_new};
+import std::core::addr::{cast_addr, msg_sender};
+import types::uniswap_v4::Hook::*;
+import types::uniswap_v4::HookFlags::*;
+
+const MineAndDeployArgs = struct {
+    flags: u256,
+    creation_code: membytes,
+    constructor_args: membytes,
+};
+
+const MineDeployRet = struct {
+    deployed: u256,
+    flag_bits: u256,
+};
+
+init {
+    return_runtime();
+}
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == 0xa6edb614 {
+        let calldata_size = @evm_calldatasize();
+        let buf = membytes_new(calldata_size);
+        @evm_calldatacopy(buf.ptr, 0, calldata_size);
+        let args = abi_decode(MineAndDeployArgs, membytes_from_ptr(buf.ptr + 4, calldata_size - 4));
+        let result = hook_mine_and_deploy(
+            msg_sender(),
+            hook_flags(args.flags),
+            args.creation_code,
+            args.constructor_args
+        );
+        let out = abi_encode(MineDeployRet {
+            deployed: cast_addr(result.deployed, u256),
+            flag_bits: result.flag_bits
+        });
+        @evm_return(out.ptr, out.length);
+    }
+    @evm_stop();
+}

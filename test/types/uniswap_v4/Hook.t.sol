@@ -9,7 +9,7 @@ contract HookTest is PlankTestBase {
     address internal harness;
 
     function setUp() public {
-        harness = deployPlank("test/types/uniswap-v4/HookHarness.plk");
+        harness = deployPlank("test/types/uniswap_v4/HookHarness.plk");
     }
 
     function test__deploy__mineAndCreate2Hook() public {
