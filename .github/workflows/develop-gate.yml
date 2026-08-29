@@ -74,10 +74,8 @@ jobs:
             exit 1
           }
 
-      - run: |
-          git submodule sync --recursive
-          git submodule update --init lib/forge-std lib/v4-core lib/v4-hooks-public
-          git -C lib/v4-core submodule update --init --recursive
+      - name: Submodules (latest upstream)
+        run: bash scripts/ci-update-lib-deps.sh
 
       - name: forge build
         run: forge build --via-ir --offline
@@ -85,8 +83,29 @@ jobs:
       - name: forge test
         run: forge test --via-ir --offline
 
-  gate:
+  deps-bump:
     needs: [approve, forge]
+    if: success()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GIT_TERMINAL_PROMPT: "0"
+      GITHUB_HEAD_REF: ${{ github.head_ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+
+      - name: Bump lib gitlinks to latest upstream
+        run: bash scripts/ci-commit-lib-deps.sh
+
+  gate:
+    needs: [approve, forge, deps-bump]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -96,7 +115,7 @@ jobs:
             success) ;;
             *) echo "::error::approve was '${{ needs.approve.result }}' — environment review did not pass"; exit 1;;
           esac
-          for x in '${{ needs.forge.result }}'; do
+          for x in '${{ needs.forge.result }}' '${{ needs.deps-bump.result }}'; do
             case "$x" in success|skipped) ;; *) echo "::error::a gate job result was '$x'"; exit 1;; esac
           done
           echo "all gate jobs green"

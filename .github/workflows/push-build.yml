@@ -73,13 +73,8 @@ jobs:
             exit 1
           }
 
-      - name: Submodules
-        run: |
-          git submodule sync --recursive
-          git submodule update --init lib/forge-std lib/v4-core lib/v4-hooks-public
-          git -C lib/v4-core submodule update --init --recursive
-          # v4-hooks-public nests ~1.2GB of deps (Optimism monorepo, etc.). Init the
-          # gitlink only — HookMiner is vendored under src/lib/; CI never recurses here.
+      - name: Submodules (latest upstream)
+        run: bash scripts/ci-update-lib-deps.sh
 
       - name: forge build
         run: forge build --via-ir --offline
