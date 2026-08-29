@@ -21,6 +21,7 @@ Uniswap v4 hooks must deploy to addresses whose low 14 bits encode permission fl
 | Flags | **Separate `HookFlags`** — 14-bit permission mask, not a venue tag |
 | Bytecode inputs | **`membytes`** for `creation_code` + `constructor_args` |
 | Verification | Inline TDD harness + Foundry suite; **push-build only** (no local sign-off) |
+| **First deliverable** | **RED deploy test only** — code writer writes test before any implementation |
 
 ---
 
@@ -131,33 +132,72 @@ revert "Hook: could not find salt"
 
 ---
 
-## Inline TDD (Registry pattern)
+## Inline TDD — deploy-first RED
+
+### Code-writer rule (non-negotiable)
+
+**The first artifact is the test.** Before any `src/types/.../Hook.plk`, std extension, or
+helper lands, the code writer MUST commit:
+
+1. `test/types/uniswap-v4/HookHarness.plk` (shell — may call symbols that do not exist yet)
+2. `test/types/uniswap-v4/Hook.t.sol` with **`test__deploy__mineAndCreate2Hook`** (RED)
+
+No implementation file until that RED push exists. Iterate **only** via `git push` →
+`push-build.yml` until green.
+
+### The RED test: straight Hook deployment
+
+The primary RED test is an **end-to-end deploy**, not an isolated `computeAddress` unit test.
+It mirrors Uniswap `HookMiner.t.sol`:
+
+```
+mine(deployer, flags, creation_code, constructor_args) → { hook_addr, hook_salt }
+raw_create2(0, init_code, hook_salt) → deployed_addr
+assert deployed_addr == hook_addr
+assert (uint160(deployed_addr) & ALL_HOOK_MASK) == flags.bits
+assert hook bytecode validates (MockBlankHook-equivalent forceValidateAddress)
+```
+
+Harness selector (minimum):
+
+| Selector | Purpose |
+|----------|---------|
+| `mineAndDeployHook(...)` | mine + `raw_create2` + return deployed address + flag bits |
+
+Supporting selectors (`computeAddress`, `flagMask`) are added **only when** the deploy test
+needs them to go green — not as the first RED shell.
 
 ### Layout
 
-| Artifact | Path |
-|----------|------|
-| Harness | `test/types/uniswap-v4/HookHarness.plk` |
-| Foundry | `test/types/uniswap-v4/Hook.t.sol` |
-| Negative fixture | `fixtures/plank-negative/HookBadVenue.plk` |
+| Artifact | Path | Order |
+|----------|------|-------|
+| Harness shell | `test/types/uniswap-v4/HookHarness.plk` | **1st** |
+| Foundry RED | `test/types/uniswap-v4/Hook.t.sol` | **1st** |
+| Implementation | `src/types/uniswap-v4/Hook.plk` (+ std utils) | **after RED push** |
+| Negative fixture | `fixtures/plank-negative/HookBadVenue.plk` | after deploy green |
 
-Harness: `init { return_runtime(); }` + `run {}` with selectors:
+### Test branches (priority order)
 
-| Selector | Exercises |
-|----------|-----------|
-| `computeAddress(...)` | CREATE2 pure path vs known vector |
-| `mine(...)` | full find loop |
-| `flagMask()` | returns `ALL_HOOK_MASK` constant |
+1. **`test__deploy__mineAndCreate2Hook`** (RED first, blocking) — mine + CREATE2 deploy +
+   flag-bit assertion on live bytecode. **This is the loop until green.**
+2. **Address collision** — second `mine` on occupied slot finds different salt (after #1 green)
+3. **MAX_LOOP revert** — impossible flags → revert string
+4. **Hook(V3) compile error** — `fixtures/plank-negative/HookBadVenue.plk`
 
-### RED-first test branches (`Hook.t.sol`)
+Pure `compute_create2` vector tests are **optional helpers** — not the entry RED test.
 
-1. **compute_create2** — fixed deployer, salt, init code hash; assert address matches Uniswap test vector
-2. **mine success** — mock creation code + args; assert `(uint160(addr) & MASK) == flags`
-3. **mine deploy round-trip** (optional) — `raw_create2` with returned salt lands at mined address
-4. **MAX_LOOP revert** — flags impossible on empty chain; expect revert string
-5. **Hook(V3) compile error** — `fixtures/plank-negative/HookBadVenue.plk` must fail with venue guard message
+Registry `uint256(uint160(HOOKS_ADDR))` round-trip is **out of scope** for this phase.
 
-Registry `uint256(uint160(HOOKS_ADDR))` round-trip is **out of scope** for this phase (lives in vol-markets `Registry.plk` consumer tests).
+### RED → GREEN loop
+
+```
+write HookHarness.plk + Hook.t.sol (deploy test only)
+    → push feat/hook-miner
+    → push-build RED (expected)
+    → add std utils + Hook.plk incrementally
+    → push again
+    → push-build GREEN = phase done
+```
 
 ### Toolchain prerequisites
 
@@ -171,10 +211,14 @@ Registry `uint256(uint160(HOOKS_ADDR))` round-trip is **out of scope** for this 
 | Phase | Branch | Deliverable |
 |-------|--------|-------------|
 | 0 | `chore/plank-toolchain` | plank-monorepo submodule, Makefile, CI plank job |
-| 1 | `std/create2-utils` | upstream or vendored std: `membytes_concat`, `compute_create2_address` |
-| 2 | `type/venue` | `Venue.plk` + harness smoke (if not already present) |
-| 3 | `type/hook-flags` | `HookFlags.plk` + tests |
-| 4 | `type/hook-miner` | `Hook.plk` + full RED→GREEN suite |
+| **1** | **`type/hook-miner`** | **RED deploy test (`HookHarness.plk` + `Hook.t.sol`) → push → iterate until green** |
+| 1a | (same branch) | std: `membytes_concat`, `compute_create2_address` as needed for green |
+| 1b | (same branch) | `HookFlags.plk`, `Hook.plk`, mock hook bytecode in harness |
+| 2 | `type/venue` | `Venue.plk` if not inlined in phase 1 |
+| 3 | follow-ons | collision test, negative fixtures, extra branches |
+
+Phase 1 **starts with the test**, not the type. Venue/HookFlags can land in the same branch
+only after the RED deploy test is pushed.
 
 Each phase: worktree, issue + PR on `JMSBPP/cfmm-types`, push-build verification only.
 
@@ -192,7 +236,7 @@ Each phase: worktree, issue + PR on `JMSBPP/cfmm-types`, push-build verification
 
 ## Success criteria
 
-- All `Hook.t.sol` branches green on `push-build.yml`
-- Behavioral parity with Uniswap `HookMiner.t.sol` vectors for `computeAddress` + `find`
-- No Solidity implementation file under `src/lib/HookMiner.sol`
-- Std extensions merged or pinned in plank-monorepo before `Hook.plk` lands
+- **`test__deploy__mineAndCreate2Hook` green on `push-build.yml`** — mine + CREATE2 deploy + flag check
+- Behavioral parity with Uniswap `HookMiner.t.sol` deploy path
+- No Solidity `HookMiner.sol` under `src/`
+- Std extensions land as needed to unblock the deploy test going green
