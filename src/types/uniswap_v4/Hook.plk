@@ -1,0 +1,131 @@
+import std::constructor::return_runtime;
+import std::abi::{abi_encode, abi_decode};
+import std::core::addr::{addr, addr_eq, cast_addr, raw_create2, unsafe_from_u256};
+import std::option::unwrap as option_unwrap;
+import std::fixedbytes::{bytes32, bytes32_from_u256};
+import std::membytes::{membytes, membytes_concat, membytes_new, membytes_from_ptr};
+import std::regions::keccak256;
+import std::error::require;
+import types::protocol_integrations::Venue::*;
+import types::uniswap_v4::HookFlags::*;
+import types::uniswap_v4::Create2::compute_create2_address;
+
+const Hook = fn (comptime V: type) type {
+    if !is_venue(V) {
+        @compile_error("Hook: V must be V4, V3 or Algebra");
+    }
+    if V != V4 {
+        @compile_error("Hook: only V4 supported in this phase");
+    }
+    return struct V {
+        hook_addr: addr,
+        hook_salt: bytes32,
+    };
+};
+
+const HookResult = struct {
+    hook_addr: addr,
+    hook_salt: bytes32,
+};
+
+const HookDeployResult = struct {
+    deployed: addr,
+    flag_bits: u256,
+};
+
+const MineAndDeployArgs = struct {
+    flags: u256,
+    creation_code: membytes,
+    constructor_args: membytes,
+};
+
+const MineDeployRet = struct {
+    deployed: u256,
+    flag_bits: u256,
+};
+
+const PredictArgs = struct {
+    salt: u256,
+    init_code_hash: u256,
+};
+
+const PredictRet = struct {
+    predicted: u256,
+};
+
+const MAX_LOOP = 160_444;
+
+const hook_mine = fn (
+    deployer: addr,
+    flags: HookFlags,
+    creation_code: membytes,
+    constructor_args: membytes,
+) HookResult {
+    let init_code = membytes_concat(creation_code, constructor_args);
+    let init_hash = keccak256(init_code);
+    let target = hook_flag_bits(flags);
+
+    let mut salt = 0;
+    while salt < MAX_LOOP {
+        let salt_word = bytes32_from_u256(salt);
+        let candidate = compute_create2_address(deployer, salt_word, init_hash);
+        let masked = cast_addr(candidate, u256) & 0x3FFF;
+        let code_size = @evm_extcodesize(cast_addr(candidate, u256));
+        if (masked == target) & (code_size == 0) {
+            return HookResult { hook_addr: candidate, hook_salt: salt_word };
+        }
+        salt = salt + 1;
+    }
+    @evm_revert(@malloc_uninit(0), 0);
+};
+
+const hook_mine_and_deploy = fn (
+    deployer: addr,
+    flags: HookFlags,
+    creation_code: membytes,
+    constructor_args: membytes,
+) HookDeployResult {
+    let mined = hook_mine(deployer, flags, creation_code, constructor_args);
+    let init_code = membytes_concat(creation_code, constructor_args);
+    let deployed = option_unwrap(raw_create2(0, init_code, mined.hook_salt));
+    require(addr_eq(deployed, mined.hook_addr));
+    HookDeployResult { deployed: deployed, flag_bits: hook_flag_bits(flags) }
+};
+
+init {
+    return_runtime();
+}
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == 0xa6edb614 {
+        let calldata_size = @evm_calldatasize();
+        let buf = membytes_new(calldata_size);
+        @evm_calldatacopy(buf.ptr, 0, calldata_size);
+        let args = abi_decode(MineAndDeployArgs, membytes_from_ptr(buf.ptr + 4, calldata_size - 4));
+        let result = hook_mine_and_deploy(
+            unsafe_from_u256(@evm_address_this()),
+            hook_flags(args.flags),
+            args.creation_code,
+            args.constructor_args
+        );
+        let out = abi_encode(MineDeployRet {
+            deployed: cast_addr(result.deployed, u256),
+            flag_bits: result.flag_bits
+        });
+        @evm_return(out.ptr, out.length);
+    } else if selector == 0x193f2cd0 {
+        let calldata_size = @evm_calldatasize();
+        let buf = membytes_new(calldata_size);
+        @evm_calldatacopy(buf.ptr, 0, calldata_size);
+        let args = abi_decode(PredictArgs, membytes_from_ptr(buf.ptr + 4, calldata_size - 4));
+        let predicted = compute_create2_address(
+            unsafe_from_u256(@evm_address_this()),
+            bytes32_from_u256(args.salt),
+            bytes32 { raw: args.init_code_hash }
+        );
+        let out = abi_encode(PredictRet { predicted: cast_addr(predicted, u256) });
+        @evm_return(out.ptr, out.length);
+    }
+    @evm_stop();
+}
