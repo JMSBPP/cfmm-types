@@ -1,0 +1,14 @@
+import std::constructor::return_runtime;
+import std::option::None;
+import types::TickSpacing::*;
+import std::core::uint::u24;
+
+
+init {return_runtime() ;}
+
+run {
+    let selector = @evm_shr(224,@evm_calldataload(0));
+    @evm_stop();
+}
+
+

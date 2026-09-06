@@ -1,0 +1,21 @@
+import std::constructor::return_runtime;
+import types::Tick::Tick;
+
+
+// setTick(int24,uint24)
+const SET_TICK = 0x8cb2f806;
+
+init {return_runtime();}
+
+
+
+run {
+	let selector = @evm_shr(224, @evm_calldataload(0));
+	if selector == SET_TICK {
+	   let tick = Tick(@evm_calldataload(4),@evm_calldataload(36));
+	   let out = @malloc_uninit(32);
+	   @mstore32(out, tick);
+	   @evm_return(out, 32);
+	}	
+	@evm_stop();
+}

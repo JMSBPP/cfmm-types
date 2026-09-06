@@ -1,0 +1,61 @@
+import std::option::{Option, Some, None, is_some, is_none, unwrap};
+import std::error::require;
+import std::core::uint::{u24, is_uint, try_cast_uint};
+
+
+const UNITIALIZED_TICK_SPACING = 201;
+// $T denotes type_index
+// over a type_index one can take _type_of(type_index)
+const TickSpacing = fn(ts: u256) u24 {
+      let mut val = if ts > 200 {
+            unwrap(try_cast_uint(200, u24))
+      } else if ts == 0 {
+            unwrap(try_cast_uint(1, u24))
+      } else {
+            unwrap(try_cast_uint(ts, u24))
+      };
+      val
+};
+ 
+
+// deferred 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// const TickSpacingUninitialized = struct {};										       //
+// const TickSpacingInitialized = struct {};										       //
+// 															       //
+// 															       //
+// const TickSpacing = fn (comptime State: Option(type)) type {struct {val: u24}};					       //
+// const tickSpacingVal = fn(ts: TickSpacing(TickSpacingInitialized)) u256 { valTickSpacing(ts); ts.val };		       //
+// 															       //
+// const mkTickSpacing = fn(comptime State: Option(type), ts: Option(u24)) TickSpacing(State) {				       //
+//       if  tickSpacingStateIsUninitialized(State) { 									       //
+// 		TickSpacing (TickSpacingUninitialized) { val: UNITIALIZED_TICK_SPACING }				       //
+// 	} else if tickSpacingStateIsInitialized(State) {								       //
+// 		if ts == None(ts) {											       //
+// 			mkTickSpacing(TickSpacingUninitialized);							       //
+// 		} else if ts == Some(ts){										       //
+// 			valTickSpacing(ts);										       //
+// 			TickSpacing (TickSpacingInitialized) {ts:ts}							       //
+// 		}													       //
+// 	} else { @compile_error("invalid tickSpacing tickSpacing value and/or state");}					       //
+// };															       //
+// 															       //
+// 															       //
+// const retTickSpacing = fn(ts:TickSpacing) never {									       //
+//       let ret_ptr = @malloc_uninit(3);										       //
+//       @mstore4(ret_ptr,valTickSpacing(ts));										       //
+// };															       //
+// 															       //
+// 															       //
+// 															       //
+// 															       //
+// const tickSpacingStateIsUninitialized = fn(comptime State: Option(type)) bool {					       //
+//       is_some(TickSpacingUninitialized,State()) & ((unwrap(State) == TickSpacingUninitialized ) or is_none(State))};	       //
+// 															       //
+// const tickSpacingStateIsInitialized = fn (comptime State: Option(type)) bool {					       //
+//       is_some(State)  & (unwrap(State) == TickSpacingInitialized);							       //
+// 															       //
+// };															       //
+// 															       //
+// const valTickSpacing = fn (ts: TickSpacing(TickSpacingInitialized)) void { require(ts.val <= 200 & ts.val > 0);};	       //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
