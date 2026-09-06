@@ -1,9 +1,13 @@
 import std::constructor::return_runtime;
-import types::Tick::Tick;
+import types::Tick::{Tick, min, max};
 
 
 // setTick(int24,uint24)
 const SET_TICK = 0x8cb2f806;
+// max(uint24)
+const MAX = 0xf7af1c95;
+// min(uint24)
+const MIN = 0x3bbe4b2f;
 
 init {return_runtime();}
 
@@ -16,6 +20,16 @@ run {
 	   let out = @malloc_uninit(32);
 	   @mstore32(out, tick);
 	   @evm_return(out, 32);
-	}	
+	} else if selector == MAX {
+	   let spacing = @evm_calldataload(4);
+	   let out = @malloc_uninit(32);
+	   @mstore32(out, max(u256, spacing));
+	   @evm_return(out, 32);
+	} else if selector == MIN {
+	   let spacing = @evm_calldataload(4);
+	   let out = @malloc_uninit(32);
+	   @mstore32(out, min(u256, spacing));
+	   @evm_return(out, 32);
+	}
 	@evm_stop();
 }

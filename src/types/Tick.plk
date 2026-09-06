@@ -16,3 +16,33 @@ const Tick = fn(tickVal: u256, rawTickSpacing: u256) u256 {
       }
       q *% tickSpacing
 };
+
+const U24_MAX: u256 = 0xffffff;
+
+// Comptime T is the return type of Tick (u256) or TickSpacing (u24).
+// Tick bounds = Tick constructed from ±u24::MAX under the given spacing.
+const max = fn (comptime T: type, rawTickSpacing: u256) T {
+	comptime {
+		if (T != u256) & (T != u24) {
+			@compile_error("max: T must be u256 (Tick) or u24 (TickSpacing)");
+		}
+	}
+	if T == u256 {
+		Tick(U24_MAX, rawTickSpacing)
+	} else {
+		TickSpacing(200)
+	}
+};
+
+const min = fn (comptime T: type, rawTickSpacing: u256) T {
+	comptime {
+		if (T != u256) & (T != u24) {
+			@compile_error("min: T must be u256 (Tick) or u24 (TickSpacing)");
+		}
+	}
+	if T == u256 {
+		Tick(0 -% U24_MAX, rawTickSpacing)
+	} else {
+		TickSpacing(1)
+	}
+};

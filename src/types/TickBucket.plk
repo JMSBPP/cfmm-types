@@ -1,0 +1,23 @@
+import types::Tick::{min, max};
+import std::core::uint::{cast_uint, u24};
+
+const TickBucketShape = fn (comptime T: type) type {
+	struct {
+		min: u256,
+		max: u256,
+	}
+};
+
+const TickBucket = fn (ts: $T) {
+	comptime {
+		if T != u24 {
+			@compile_error("TickBucket: pass TickSpacing(...) (u24)");
+		}
+	}
+	TickBucketShape(T)
+} {
+	TickBucketShape(T) {
+		min: min(u256, cast_uint(ts, u256)),
+		max: max(u256, cast_uint(ts, u256)),
+	}
+};
