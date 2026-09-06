@@ -1,0 +1,18 @@
+import types::TickSpacing::TickSpacing;
+import std::core::uint::{cast_uint, try_cast_uint, u24};
+import std::option::unwrap;
+
+const Tick = fn(tickVal: u256, rawTickSpacing: u256) u256 {
+      let mut tick = if @evm_slt(tickVal, 0) {
+            - cast_uint(unwrap(try_cast_uint(0 -% tickVal, u24)), u256)
+      } else {
+            cast_uint(unwrap(try_cast_uint(tickVal, u24)), u256)
+      };
+      let tickSpacing = cast_uint(TickSpacing(rawTickSpacing), u256);
+      let mut q = @evm_sdiv(tick, tickSpacing);
+      // Floor toward -inf so negative ticks snap down to spacing (SDIV truncates toward 0).
+      if @evm_slt(tick, 0) & (@evm_smod(tick, tickSpacing) != 0) {
+            q = q -% 1;
+      }
+      q *% tickSpacing
+};
