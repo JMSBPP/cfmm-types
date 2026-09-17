@@ -13,3 +13,9 @@
 [submodule "lib/plank-foundry-deployer"]
 	path = lib/plank-foundry-deployer
 	url = https://github.com/plankevm/plank-foundry-deployer
+[submodule "lib/plankified-univ3"]
+	path = lib/plankified-univ3
+	url = https://github.com/plankevm/plankified-univ3
+[submodule "lib/angstrom"]
+	path = lib/angstrom
+	url = https://github.com/SorellaLabs/angstrom

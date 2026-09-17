@@ -1,0 +1,28 @@
+import std::constructor::return_runtime;
+
+// \[
+// 	\sigma_F = 1/T \sum (T_Q - T_Q^*)^2
+// \]
+
+
+// Consider the following scenario
+
+// Current time is t_0 and consider there is a specified time to expiration T - t_0
+// From here we can obtain T and then sum values on T_Q
+
+// Assume variance is given in pips units, which fit 16 bits. Same as feePips
+// 100 -> 0.01%
+// 300 -> 0.03%
+// 1000 -> 0.1%
+// 10_000 -> 1%
+// We want 2 decimal places for precision
+// 16 bits --> Q8.8
+
+
+// One wants to specify 
+init {return_runtime();}
+
+run {
+
+    @evm_stop();
+}

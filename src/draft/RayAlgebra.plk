@@ -1,0 +1,91 @@
+import std::constructor::return_runtime;
+import std::error::{comptime_assert,require};
+import std::core::uint::is_uint;
+import std::core::ops::{greater_equals, less_equals, checked_div_down, checked_mul};
+import types::Numerics::U256_MAX;
+
+const RAY_ZERO = 0x0000000000000000000000000000000000000000000000000000000000000000;
+const RAY_UNIT = 0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000;
+const RAY_2 = 0x0000000000000000000a70c3c40a64e6c51999090b65f67d9240000000000000;
+
+const Ray = struct {
+      val: u256
+}; 
+
+const rayVal = fn(self: Ray) u256 {
+      self.val
+};
+
+const rayMulId = fn() Ray {
+      Ray {val: RAY_UNIT}
+};
+
+const rayAddId = fn() Ray {
+      Ray {val: RAY_ZERO}
+};
+
+const rayMax = fn() Ray {
+     Ray {val :checked_div_down(U256_MAX,rayVal (rayMulId ()))}       
+};
+
+
+
+const Expansion = struct {};
+const Contraction = struct{};
+
+
+// todo: n must be a generic type
+const RayScalingFactor = fn(comptime Flag: type, n: u256) type {
+      // todo: We still want to figure out how to put this invariant within the type constructor
+      // let expScaleSeed: ScalingFactor(Ray, Expansion,$u256) = ScalingFactor(Ray,Expansion,n);
+       // comptime_assert(ScalingFactor(Ray,Contraction,expScaleSeed).val == rayVal (rayMulId()), "Undefined scaling factor");
+
+    if Flag == Contraction {
+       // todo: Best replaced with comptime_assert, but from now needs to take run times
+        require(
+            greater_equals(n, rayVal(rayAddId())) &
+            less_equals(n, rayVal(rayMulId())));
+
+        struct {
+            val: u256
+        }
+    } else if Flag == Expansion {
+        require(
+            greater_equals(n, rayVal(rayAddId())) &
+            less_equals(n, rayVal(rayMax()))
+        );
+
+        struct {
+            val: u256
+        }
+    }
+};
+
+
+const rayScalingFactor = fn(comptime Flag: type, n: u256) u256 {
+    if Flag == Contraction {
+        require(
+            greater_equals(n, rayVal(rayAddId())) &
+            less_equals(n, rayVal(rayMulId()))        );
+
+        checked_div_down(rayVal(rayMulId()), n)
+    } else if Flag == Expansion {
+        require(
+            greater_equals(n, rayVal(rayAddId())) &
+            less_equals(n, rayVal(rayMax()))
+        );
+
+        checked_mul(n, rayVal(rayMulId()))
+    }
+};
+
+// 1/2 *2 = 1
+
+init {return_runtime();}
+
+run {
+    let rs  = rayScalingFactor(Contraction,2);
+    let retPtr = @malloc_uninit(32);
+    @mstore32(retPtr, rs);
+    @evm_return(retPtr, 32);
+}
