@@ -15,7 +15,9 @@ docs/*
 
 # Internal agent tracking (not committed)
 TODO.md
-.spec/
+.spec/*
+!.spec/types/
+!.spec/types/**
 
 # Dotenv file
 .env
