@@ -1,4 +1,4 @@
-.PHONY: plank-toolchain compile-plank clean-plank
+.PHONY: plank-toolchain compile-plank compile-toml clean-plank
 
 PLANK := plank
 PLANK_BACKEND := sona
@@ -27,6 +27,9 @@ compile-plank:
 	done; \
 	printf '\ncompile-plank: %s ok, %s failed, %s skipped\n' "$$ok" "$$fail" "$$skip"; \
 	exit $$rc
+
+compile-toml:
+	@bash scripts/compile-toml.sh
 
 clean-plank:
 	@rm -rf $(PLANK_BUILD)

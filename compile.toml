@@ -1,0 +1,6 @@
+# Explicit Plank artifacts. CI (`make compile-toml`) compiles each path
+# with the same deps/backend as `make compile-plank`.
+# Empty (no [[artifact]]) is success. Type implementer appends one table per file.
+
+# [[artifact]]
+# path = "src/types/TimeSpacing.plk"
