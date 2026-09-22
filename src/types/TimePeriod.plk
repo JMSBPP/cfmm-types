@@ -1,7 +1,7 @@
 import std::error::{comptime_assert, require};
-import types::TimeSpacing::*;
-import types::TimeIndex::*;
-import types::Window::*;
+import cfmm_types::TimeSpacing::*;
+import cfmm_types::TimeIndex::*;
+import cfmm_types::Window::*;
 
 // TimePeriod ← k ∈ {0, …, N}     N = Window() / dt̄
 // secondsAgo = k · dt̄

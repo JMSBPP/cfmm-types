@@ -6,9 +6,9 @@ import std::fixedbytes::{bytes32, bytes32_from_u256};
 import std::membytes::{membytes, membytes_concat, membytes_new, membytes_from_ptr};
 import std::regions::keccak256;
 import std::error::require;
-import types::protocol_integrations::Venue::*;
-import types::uniswap_v4::HookFlags::*;
-import types::uniswap_v4::Create2::compute_create2_address;
+import cfmm_types::protocol_integrations::Venue::*;
+import cfmm_types::uniswap_v4::HookFlags::*;
+import cfmm_types::uniswap_v4::Create2::compute_create2_address;
 
 const Hook = fn (comptime V: type) type {
     if !is_venue(V) {

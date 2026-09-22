@@ -1,5 +1,5 @@
 import std::constructor::return_runtime;
-import types::TimeIndex::*;
+import cfmm_types::TimeIndex::*;
 
 const DT = TimeIndex(2);
 

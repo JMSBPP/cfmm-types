@@ -1,5 +1,5 @@
 import std::constructor::return_runtime;
-import types::TimeSpacing::*;
+import cfmm_types::TimeSpacing::*;
 
 // Instantiates the lattice at dt̄ = 2 so constructors run at comptime:
 // N = W / 2 = 43200

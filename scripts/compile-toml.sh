@@ -12,7 +12,7 @@ MANIFEST="$ROOT/compile.toml"
 PLANK="${PLANK:-plank}"
 PLANK_BACKEND="${PLANK_BACKEND:-sona}"
 PLANK_BUILD="${PLANK_BUILD:-build/plank}"
-PLANK_DEP="${PLANK_DEP:---dep std=lib/plank-monorepo/std/ --dep types=src/types --dep lib=src/lib}"
+PLANK_DEP="${PLANK_DEP:---dep std=lib/plank-monorepo/std/ --dep cfmm_types=src/types --dep lib=src/lib}"
 
 mkdir -p "$PLANK_BUILD"
 

@@ -1,6 +1,6 @@
 import std::error::comptime_assert;
-import types::TimeSpacing::*;
-import types::Window::*;
+import cfmm_types::TimeSpacing::*;
+import cfmm_types::Window::*;
 
 // t = @evm_timestamp (value, u32-truncated). t_init = initialize(time).
 // i(t)           = ⌊(t − t_init)/dt̄⌋ mod M

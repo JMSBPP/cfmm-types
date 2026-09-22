@@ -1,5 +1,5 @@
 import std::error::comptime_assert;
-import types::Window::*;
+import cfmm_types::Window::*;
 
 // TimeSpacing ← dt̄ := { dt ∈ u8 | dt ∈ {2,3,4,5,6,8,9,10} }
 // W = Window()

@@ -1,6 +1,6 @@
 import std::constructor::return_runtime;
-import types::TimeIndex::*;
-import types::TimePeriod::*;
+import cfmm_types::TimeIndex::*;
+import cfmm_types::TimePeriod::*;
 
 const DT = TimeIndex(2);
 const _K0 = TimePeriod(2, 0);

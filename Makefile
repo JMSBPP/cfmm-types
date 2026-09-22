@@ -6,7 +6,7 @@ PLANK_BUILD := build/plank
 PLANK_PATH_BIN := $(HOME)/.plank/bin/plank
 PLANK_DEV_EXEC := lib/plank-monorepo/plankc/target/release/plank
 
-PLANK_DEP := --dep std=lib/plank-monorepo/std/ --dep types=src/types --dep lib=src/lib
+PLANK_DEP := --dep std=lib/plank-monorepo/std/ --dep cfmm_types=src/types --dep lib=src/lib
 
 plank-toolchain:
 	cd lib/plank-monorepo/plankc && cargo build --release
