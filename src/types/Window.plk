@@ -1,0 +1,16 @@
+import std::error::comptime_assert;
+
+// Window = 24 × 60 × 60
+// REF: uint32 internal constant WINDOW = 1 days;  (Algebra VolatilityOracle)
+//      hex 0x15180  /  decimal 86400
+// Window = Σ_{i=0}^{N} dt̄    with    N = Window / dt̄
+// (Window)^{-1} is the TWAP / average-volatility denominator (seconds), not a packed field.
+// lastIndex / windowStartIndex consume N = Window / dt̄ — see TimeIndex.
+
+const WINDOW = 24 *% 60 *% 60;
+
+const Window = fn () u256 {
+    comptime_assert(WINDOW == 86400, "Window: 24*60*60 != 86400");
+    comptime_assert(WINDOW == 0x15180, "Window: != Algebra 1 days (0x15180)");
+    WINDOW
+};

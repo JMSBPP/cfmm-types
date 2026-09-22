@@ -1,0 +1,27 @@
+---
+description: cfmm-types is infra for RealizedVolatility.plk; amendments via issues
+alwaysApply: true
+---
+
+# RealizedVolatility consumer (do not own the module)
+
+`RealizedVolatility.plk` lives in vol-markets. This repo ships **types** that module's owner imports. Do **not** vendor, edit, or write tests that *are* `RealizedVolatility.plk`.
+
+## What we provide
+
+Lattice types with formulas in comments and comptime constructor proofs, compiled via `just` / `compile.toml`. Order for their initialize / lookback tests:
+
+1. `TimeSpacing` (done) — `dt ∈ {2,3,4,5,6,8,9,10}`
+2. `Window` — `W = 86400`, `N = W/dt`
+3. `TimeIndex` — derived `lastIndex` / `oldestIndex` / `windowStartIndex`
+4. `TimePeriod` — lookback `k ∈ {0,…,N}`
+
+`@evm_timestamp` is a **value**, not a type. Do not wrap it so they cannot pass Algebra `time`.
+
+## Amendments
+
+They request changes by **GitHub issues** on `JMSBPP/cfmm-types` (assign `cfmm_types.type_implementer`). We do not patch their module in-chat. EVM opcode semantics go to `JMSBPP/typed-evm-semantics`.
+
+## Type writes
+
+One `.plk` at a time, user approval before each type file. Harness + Foundry via `PlankTestBase`. No `shell_initialize` here — that is their test.

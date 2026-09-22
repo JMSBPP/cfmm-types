@@ -1,0 +1,29 @@
+import std::constructor::return_runtime;
+import types::TimeSpacing::*;
+
+// Instantiates the lattice at dt̄ = 2 so constructors run at comptime:
+// N = W / 2 = 43200
+const DT = TimeSpacing(2);
+const N = n(2);
+
+// n()
+const SEL_N = 0x2e52d606;
+// dt()
+const SEL_DT = 0x3fdb8cbd;
+
+init { return_runtime(); }
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == SEL_N {
+        let out = @malloc_uninit(32);
+        @mstore32(out, N);
+        @evm_return(out, 32);
+    }
+    if selector == SEL_DT {
+        let out = @malloc_uninit(32);
+        @mstore32(out, DT);
+        @evm_return(out, 32);
+    }
+    @evm_stop();
+}

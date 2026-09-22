@@ -1,0 +1,56 @@
+import std::error::comptime_assert;
+import types::TimeSpacing::*;
+import types::Window::*;
+
+// t = @evm_timestamp (value, u32-truncated). t_init = initialize(time).
+// i(t)           = ⌊(t − t_init)/dt̄⌋ mod M
+// lastIndex(t)   = i(t)
+// wrapped(t)     ⇔ ⌊(t − t_init)/dt̄⌋ ≥ M
+// oldestIndex(t) = 0  if ¬wrapped;  (i(t)+1) mod M if wrapped
+// windowStartIndex(t) = (i(t) − N) mod M
+// next: i ↦ (i+1) mod M
+// M = 65536    N = Window()/dt̄
+// Algebra lastIndex+1 occupancy is not this lattice.
+// Call TimeIndex(dt̄) so TimeSpacing proofs run; lastIndex/oldestIndex take runtime t.
+
+const MASK16 = 65535;
+
+const bins = fn (comptime dt: u256, t_init: u256, t: u256) u256 {
+    (t -% t_init) </ dt
+};
+
+const lastIndex = fn (comptime dt: u256, t_init: u256, t: u256) u256 {
+    bins(dt, t_init, t) & MASK16
+};
+
+const wrapped = fn (comptime dt: u256, t_init: u256, t: u256) bool {
+    bins(dt, t_init, t) > MASK16
+};
+
+const next = fn (index: u256) u256 {
+    (index +% 1) & MASK16
+};
+
+const oldestIndex = fn (comptime dt: u256, t_init: u256, t: u256) u256 {
+    if wrapped(dt, t_init, t) {
+        next(lastIndex(dt, t_init, t))
+    } else {
+        0
+    }
+};
+
+const windowStartIndex = fn (comptime dt: u256, t_init: u256, t: u256) u256 {
+    (lastIndex(dt, t_init, t) -% (Window() </ dt)) & MASK16
+};
+
+const TimeIndex = fn (comptime dt: u256) u256 {
+    TimeSpacing(dt);
+    comptime_assert(lastIndex(dt, 0, 0) == 0, "TimeIndex: lastIndex(t_init)=0");
+    comptime_assert(oldestIndex(dt, 0, 0) == 0, "TimeIndex: oldestIndex at genesis is 0");
+    comptime_assert(
+        windowStartIndex(dt, 0, 0) == (RING -% n(dt)),
+        "TimeIndex: windowStartIndex(t_init)= -N mod M"
+    );
+    comptime_assert(next(MASK16) == 0, "TimeIndex: next wraps at M");
+    dt
+};

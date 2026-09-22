@@ -1,0 +1,43 @@
+import std::constructor::return_runtime;
+import types::TimeIndex::*;
+
+const DT = TimeIndex(2);
+
+const SEL_LAST_INDEX = 0xf8583b7a;
+const SEL_OLDEST_INDEX = 0x72357fbe;
+const SEL_WINDOW_START = 0x245995d7;
+const SEL_NEXT = 0xedd004e5;
+
+init { return_runtime(); }
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == SEL_LAST_INDEX {
+        let t_init = @evm_calldataload(4);
+        let t = @evm_calldataload(36);
+        let out = @malloc_uninit(32);
+        @mstore32(out, lastIndex(DT, t_init, t));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_OLDEST_INDEX {
+        let t_init = @evm_calldataload(4);
+        let t = @evm_calldataload(36);
+        let out = @malloc_uninit(32);
+        @mstore32(out, oldestIndex(DT, t_init, t));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_WINDOW_START {
+        let t_init = @evm_calldataload(4);
+        let t = @evm_calldataload(36);
+        let out = @malloc_uninit(32);
+        @mstore32(out, windowStartIndex(DT, t_init, t));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_NEXT {
+        let index = @evm_calldataload(4);
+        let out = @malloc_uninit(32);
+        @mstore32(out, next(index));
+        @evm_return(out, 32);
+    }
+    @evm_stop();
+}

@@ -2,5 +2,14 @@
 # with the same deps/backend as `make compile-plank`.
 # Empty (no [[artifact]]) is success. Type implementer appends one table per file.
 
-# [[artifact]]
-# path = "src/types/TimeSpacing.plk"
+[[artifact]]
+path = "test/harness/TimeSpacingHarness.plk"
+
+[[artifact]]
+path = "test/harness/WindowHarness.plk"
+
+[[artifact]]
+path = "test/harness/TimeIndexHarness.plk"
+
+[[artifact]]
+path = "test/harness/TimePeriodHarness.plk"

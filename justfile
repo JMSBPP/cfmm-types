@@ -1,4 +1,8 @@
-# Type implementer entry: `just plank src/types/Foo.plk`
+# Type implementer:
+#   just                  → compile every [[artifact]] in compile.toml
+#   just plank <file.plk> → one file + deps (std, types, lib), sona
+default: compile-toml
+
 plank file:
 	plank build {{file}} --dep std=lib/plank-monorepo/std/ --dep types=src/types --dep lib=src/lib --backend sona
 

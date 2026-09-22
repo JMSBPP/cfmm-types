@@ -1,0 +1,38 @@
+import std::constructor::return_runtime;
+import types::TimeIndex::*;
+import types::TimePeriod::*;
+
+const DT = TimeIndex(2);
+const _K0 = TimePeriod(2, 0);
+const _KN = TimePeriod(2, 43200);
+
+const SEL_SECONDS_AGO = 0x9eb2f94c;
+const SEL_TARGET_BIN = 0x4cf1b2a4;
+const SEL_TWAP_SECONDS_AGO = 0x20541705;
+
+init { return_runtime(); }
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == SEL_SECONDS_AGO {
+        let k = @evm_calldataload(4);
+        let out = @malloc_uninit(32);
+        @mstore32(out, secondsAgo(DT, k));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_TARGET_BIN {
+        let t_init = @evm_calldataload(4);
+        let t = @evm_calldataload(36);
+        let k = @evm_calldataload(68);
+        let out = @malloc_uninit(32);
+        @mstore32(out, targetBin(DT, t_init, t, k));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_TWAP_SECONDS_AGO {
+        let k = @evm_calldataload(4);
+        let out = @malloc_uninit(32);
+        @mstore32(out, twapSecondsAgo(DT, k));
+        @evm_return(out, 32);
+    }
+    @evm_stop();
+}

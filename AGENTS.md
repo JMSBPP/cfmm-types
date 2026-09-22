@@ -68,3 +68,7 @@ Worktree loop: commit → `git push -u origin <branch>` → read `push-build.yml
 
 - [`.spec/`](./.spec/README.md) — implementation guidelines and spec queue
 - `TODO.md` — deferred items
+
+## RealizedVolatility consumer
+
+Types here are **infra** for the owner of vol-markets `RealizedVolatility.plk`. Do not vendor that module. They import our types and file amendments as GitHub issues (`JMSBPP/cfmm-types`, assignee `cfmm_types.type_implementer`). EVM opcode semantics → `JMSBPP/typed-evm-semantics`. Next lattice type after `TimeSpacing`: `Window` (`W = 86400`), then `TimeIndex`, then `TimePeriod`. `@evm_timestamp` stays a value.

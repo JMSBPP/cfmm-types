@@ -1,0 +1,19 @@
+import std::constructor::return_runtime;
+import types::Window::*;
+
+const W = Window();
+
+// window()
+const SEL_WINDOW = 0x461645bf;
+
+init { return_runtime(); }
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == SEL_WINDOW {
+        let out = @malloc_uninit(32);
+        @mstore32(out, W);
+        @evm_return(out, 32);
+    }
+    @evm_stop();
+}
