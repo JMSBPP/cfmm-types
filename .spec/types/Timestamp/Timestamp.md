@@ -2,6 +2,8 @@
 
 Clock instant. Not a lattice node (`TimeIndex` / `TimeCoordinate`), not a duration (`secondsAgo` / `TimePeriod`), not a sample (`TimePoint`).
 
+Idris: [Timestamp.idr](./Timestamp.idr). EVM observation (TIMESTAMP, ABI packing, wrapping `SUB`) is not this module — file it on [`JMSBPP/typed-evm-semantics`](https://github.com/JMSBPP/typed-evm-semantics).
+
 \[
 \begin{aligned}
 U_{32}

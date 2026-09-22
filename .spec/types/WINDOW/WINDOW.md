@@ -38,45 +38,62 @@ uint32 internal constant WINDOW = 1 days;
 \]
 
 
+Oracle lattice \(\bar{dt}\) is the subset of TimeSpacing that divides \(W\) and fits one WINDOW in a `uint16` ring (drops \(1\) and \(7\)):
+
 \[
-	\begin{aligned}
-		\textrm{TimeSpacing }\leftarrow \bar{dt} := \{dt \in \mathrm{u8} \mid 1 \leq dt \, \leq 10\}
-	\end{aligned}
+\begin{aligned}
+	\bar{dt} &\in \{2,3,4,5,6,8,9,10\} \\
+	N &= W/\bar{dt} \in \mathbb{N} \\
+	M &= 65536
+\end{aligned}
 \]
+
+Entry points: [TimeIndex](../TimeIndex/TimeIndex.md).
 
 \[
 	\begin{aligned}
 		\textrm{TimeWidth} \leftarrow n_t\,:= \{n_t \in \mathrm{u24}\mid 1\leq n_t \leq \lfloor \, \rfloor\} \\
 		\\
-		\text{TimeCoordinate}\, \leftarrow t (t_0 \in \textrm{u32}, \bar{dt}, n_t) := \{t \mid t = t_0 + n_t \, \bar{dt}\} \, 
+		\text{TimeCoordinate}\, \leftarrow t (t_{\mathrm{init}} \in \textrm{u32}, \bar{dt}, n_t) := \{t \mid t = t_{\mathrm{init}} + n_t \, \bar{dt}\} \, 
 	\end{aligned}
 \]
 
 \[
 	\begin{aligned}
-		\textrm{TimeSequence} \leftarrow T(\bar{dt}) := \{\{t_j\}_{j=0}^{N = \frac{\mathrm{Window}}{\bar{dt}}} \,  \mid \, \textrm{Window} = \sum_{i=0}^{N} \bar t_i\}
+		\textrm{TimeSequence} \leftarrow T(\bar{dt}) := \{\{t_j\}_{j=0}^{N = \frac{\mathrm{Window}}{\bar{dt}}} \,  \mid \, \textrm{Window} = \sum_{i=0}^{N} \bar{dt}\}
 	\end{aligned}
 \]
 
 \[
     \begin{aligned}
-		\mathrm{TimeIndex} \leftarrow t(\bar{dt}) := \{t \in \mathrm{u32} \mid t \in T(\bar{dt})\} \\
-		\mathrm{next}:: \, t (t_0,\bar{dt}, 1) \to t(\bar{dt})
+		i(t)
+		&=
+		\lfloor (t-t_{\mathrm{init}})/\bar{dt} \rfloor \bmod M
+		\\
+		\mathrm{lastIndex}(t) &= i(t)
+		\\
+		\mathrm{oldestIndex}(t)
+		&=
+		\begin{cases}
+		0 & \lfloor (t-t_{\mathrm{init}})/\bar{dt} \rfloor < M \\
+		(i(t)+1)\bmod M & \text{otherwise}
+		\end{cases}
+		\\
+		\mathrm{windowStartIndex}(t) &= (i(t)-N)\bmod M
  	\end{aligned}
 \]
 
 \[
 	\begin{aligned}
-		\mathrm{TimePeriod}\, \leftarrow \, t_p(\bar{dt})
+		\mathrm{TimePeriod}\, \leftarrow \, k \in \{0,\ldots,N\} \\
+		\texttt{secondsAgo} = k\cdot\bar{dt} \\
+		\text{target bin} = (i(t)-k)\bmod M
 	\end{aligned}
 \]
 
+`getSingleTimepoint` allows \(k=0\) (now). `getTwapTick` rejects \(k=0\).
 
-\[
-	\begin{aligned}
-		t(\bar{dt})[t_0,t_p] = t_0 - t_p(\bar{dt})
-	\end{aligned}
-\]
+uint32 clock wrap is not this lattice — [`typed-evm-semantics`](https://github.com/JMSBPP/typed-evm-semantics).
 
 
 
