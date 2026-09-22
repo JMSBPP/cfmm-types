@@ -105,8 +105,24 @@ jobs:
       - run: make plank-toolchain
       - run: make compile-plank
 
+  compile-toml:
+    needs: [approve]
+    runs-on: [self-hosted, cfmm-build]
+    timeout-minutes: 15
+    env:
+      GIT_TERMINAL_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          persist-credentials: false
+      - run: git submodule sync --recursive
+      - run: git submodule update --init lib/plank-monorepo lib/plank-foundry-deployer
+      - run: make plank-toolchain
+      - run: make compile-toml
+
   gate:
-    needs: [approve, forge, plank]
+    needs: [approve, forge, plank, compile-toml]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -116,7 +132,7 @@ jobs:
             success) ;;
             *) echo "::error::approve was '${{ needs.approve.result }}' — environment review did not pass"; exit 1;;
           esac
-          for x in '${{ needs.forge.result }}' '${{ needs.plank.result }}'; do
+          for x in '${{ needs.forge.result }}' '${{ needs.plank.result }}' '${{ needs.compile-toml.result }}'; do
             case "$x" in success|skipped) ;; *) echo "::error::a gate job result was '$x'"; exit 1;; esac
           done
           echo "all gate jobs green"

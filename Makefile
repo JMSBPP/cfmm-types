@@ -1,4 +1,4 @@
-.PHONY: plank-toolchain compile-plank clean-plank
+.PHONY: plank-toolchain compile-plank compile-toml clean-plank
 
 PLANK := plank
 PLANK_BACKEND := sona
@@ -6,7 +6,7 @@ PLANK_BUILD := build/plank
 PLANK_PATH_BIN := $(HOME)/.plank/bin/plank
 PLANK_DEV_EXEC := lib/plank-monorepo/plankc/target/release/plank
 
-PLANK_DEP := --dep std=lib/plank-monorepo/std/ --dep types=src/types --dep lib=src/lib
+PLANK_DEP := --dep std=lib/plank-monorepo/std/ --dep cfmm_types=src/types --dep lib=src/lib
 
 plank-toolchain:
 	cd lib/plank-monorepo/plankc && cargo build --release
@@ -27,6 +27,9 @@ compile-plank:
 	done; \
 	printf '\ncompile-plank: %s ok, %s failed, %s skipped\n' "$$ok" "$$fail" "$$skip"; \
 	exit $$rc
+
+compile-toml:
+	@bash scripts/compile-toml.sh
 
 clean-plank:
 	@rm -rf $(PLANK_BUILD)

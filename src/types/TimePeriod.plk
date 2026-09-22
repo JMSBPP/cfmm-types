@@ -1,0 +1,34 @@
+import std::error::{comptime_assert, require};
+import cfmm_types::TimeSpacing::*;
+import cfmm_types::TimeIndex::*;
+import cfmm_types::Window::*;
+
+// TimePeriod ← k ∈ {0, …, N}     N = Window() / dt̄
+// secondsAgo = k · dt̄
+// target bin = (i(t) − k) mod M
+// getSingleTimepoint allows k = 0 (now)
+// getTwapTick rejects k = 0
+// Call TimePeriod(dt̄, k) at comptime; secondsAgo/targetBin take runtime k.
+
+const TimePeriod = fn (comptime dt: u256, comptime k: u256) u256 {
+    TimeIndex(dt);
+    comptime_assert(k <= n(dt), "TimePeriod: k > N");
+    comptime_assert((k *% dt) <= Window(), "TimePeriod: secondsAgo > Window");
+    comptime_assert((n(dt) *% dt) == Window(), "TimePeriod: k=N => secondsAgo = Window");
+    k
+};
+
+const secondsAgo = fn (comptime dt: u256, k: u256) u256 {
+    require(k <= (Window() </ dt));
+    k *% dt
+};
+
+const twapSecondsAgo = fn (comptime dt: u256, k: u256) u256 {
+    require(k != 0);
+    secondsAgo(dt, k)
+};
+
+const targetBin = fn (comptime dt: u256, t_init: u256, t: u256, k: u256) u256 {
+    require(k <= (Window() </ dt));
+    (lastIndex(dt, t_init, t) -% k) & MASK16
+};

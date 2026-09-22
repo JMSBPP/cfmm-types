@@ -1,6 +1,6 @@
 import std::constructor::return_runtime;
 import std::option::None;
-import types::TickSpacing::*;
+import cfmm_types::TickSpacing::*;
 import std::core::uint::u24;
 
 

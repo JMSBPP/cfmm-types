@@ -86,6 +86,9 @@ jobs:
       - name: compile-plank
         run: make compile-plank
 
+      - name: compile-toml
+        run: make compile-toml
+
       - name: forge build
         run: forge build --via-ir --offline
 

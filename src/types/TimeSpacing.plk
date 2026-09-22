@@ -1,0 +1,27 @@
+import std::error::comptime_assert;
+import cfmm_types::Window::*;
+
+// TimeSpacing ← dt̄ := { dt ∈ u8 | dt ∈ {2,3,4,5,6,8,9,10} }
+// W = Window()
+// N = W / dt̄ ∈ ℕ
+// M = 65536
+// i(t) = ⌊(t − t_init)/dt̄⌋ mod M
+// lastIndex(t) = i(t)
+// windowStartIndex(t) = (i(t) − N) mod M
+// ring period M·dt̄ > W  (dt̄ ≥ 2 ⇒ M·dt̄ ≥ 131072 > 86400)
+
+const RING = 65536;
+
+const TimeSpacing = fn (comptime dt: u256) u256 {
+    comptime_assert(
+        (dt == 2) | (dt == 3) | (dt == 4) | (dt == 5) | (dt == 6) | (dt == 8) | (dt == 9) | (dt == 10),
+        "TimeSpacing: dt not in {2,3,4,5,6,8,9,10}"
+    );
+    comptime_assert((Window() </ dt) *% dt == Window(), "TimeSpacing: N = Window/dt must be in N");
+    comptime_assert((RING *% dt) > Window(), "TimeSpacing: ring period M*dt must exceed Window");
+    dt
+};
+
+const n = fn (comptime dt: u256) u256 {
+    Window() </ TimeSpacing(dt)
+};

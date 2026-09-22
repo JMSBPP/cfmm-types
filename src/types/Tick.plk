@@ -1,4 +1,4 @@
-import types::TickSpacing::TickSpacing;
+import cfmm_types::TickSpacing::TickSpacing;
 import std::core::uint::{cast_uint, try_cast_uint, u24};
 import std::option::unwrap;
 

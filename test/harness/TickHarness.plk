@@ -1,5 +1,5 @@
 import std::constructor::return_runtime;
-import types::Tick::Tick;
+import cfmm_types::Tick::Tick;
 
 
 // setTick(int24,uint24)
