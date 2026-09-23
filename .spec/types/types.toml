@@ -51,7 +51,6 @@ laws = [
 ]
 refined = false
 notes = """
-Domain RealizedVolatility (#26). Ray (#28/#32) available on develop.
-Type phase: SQRT_DT_RAY_* owned; sqrt_dt → Ray signature hole (define next).
-No Eff. No Weiner/Shock bodies.
+Domain RealizedVolatility (#26). Define: sqrt_dt → Ray via SQRT_DT_RAY_* + Ray.intro.
+BTT TimeSpacingSqrtDt.btt. No Eff. No Weiner/Shock bodies. Pin path: cfmm_types::TimeSpacing.
 """
