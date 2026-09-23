@@ -67,15 +67,38 @@ q\notin\mathrm{u16}
 > **NOTE:** v1 `intro` takes two **untyped** `u256` (`v_1` ≈ Ray-scale √, `v_2` ≈ shock magnitude).  
 > This can be improved: tighten arguments to typed carriers (e.g. `Ray` × magnitude) once those tracks land. Do not invent dependent input kinds in this type phase.
 
-## First define behavior (`.btt` later)
+### \(\mathrm{intro}
+::
+\mathrm{u256}\times\mathrm{u256}
+\to
+\mathrm{Pips}+\bot\)
 
-Planned tree (define phase — not this phase):
+\[
+\begin{aligned}
+\mathrm{Eff}^{\mathrm{intro}} &= [\,]
+\\
+\mathrm{intro}(v_1,v_2)
+&=
+\mathrm{Pips}\{\mathrm{val}\leftarrow\mathrm{u16}(q)\}
+\\
+q
+&=
+\mathrm{mulDiv}(v_1,v_2,\mathrm{PIPS})
+=
+\big\lfloor (v_1\cdot v_2)/\mathrm{PIPS} \big\rfloor
+\\
+q\notin\mathrm{u16}
+&\Longrightarrow
+\bot
+\\
+\mathrm{mulDiv}
+&:=
+\texttt{checked\_div\_down}(\texttt{checked\_mul}(v_1,v_2),\mathrm{PIPS})
+\end{aligned}
+\]
 
-- **success:** `intro(v1,v2)` → `Pips { val }` when `mulDiv(v1,v2,PIPS)` fits `u16`
-- **invalid:** product does not fit `u16` → revert
-
-BTT path (define): [Pips.btt](Pips.btt) · suite `test/types/Pips.t.sol`
+Plank: `intro`. BTT: [Pips.btt](Pips.btt). Suite: `test/types/Pips.t.sol` (Bulloak). Harness: `test/harness/PipsHarness.plk`.
 
 ## Export
 
-`cfmm_types::Pips` — vol-markets WeinerGenerator pins this for `(sqrt_ray, mag) → Pips` (replaces ad-hoc `checked_mul </ PIPS` product when define lands).
+`cfmm_types::Pips` — vol-markets WeinerGenerator pins this for `(sqrt_ray, mag) → Pips` (replaces ad-hoc `checked_mul </ PIPS` product).

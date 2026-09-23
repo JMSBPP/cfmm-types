@@ -16,5 +16,5 @@ refined = false
 notes = """
 #27 type/Pips. v1: intro takes untyped u256×u256 (IMPROVE → Ray × mag later).
 PIPS = 1e6 Algebra FEE_DENOMINATOR. No Eff. No Weiner/Shock bodies.
-First .btt (define): success fit-u16 + invalid overflow revert.
+Define: intro filled; Pips.btt success fit-u16 + overflow revert.
 """
