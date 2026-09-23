@@ -15,7 +15,4 @@ path = "test/harness/TimeIndexHarness.plk"
 path = "test/harness/TimePeriodHarness.plk"
 
 [[artifact]]
-path = "src/types/Pips.plk"
-
-[[artifact]]
 path = "test/harness/PipsHarness.plk"
