@@ -1,6 +1,8 @@
 import std::error::comptime_assert;
 import cfmm_types::Window::*;
+import cfmm_types::Ray::Ray;
 
+// -- types.toml: TimeSpacing
 // TimeSpacing ← dt̄ := { dt ∈ u8 | dt ∈ {2,3,4,5,6,8,9,10} }
 // W = Window()
 // N = W / dt̄ ∈ ℕ
@@ -9,6 +11,10 @@ import cfmm_types::Window::*;
 // lastIndex(t) = i(t)
 // windowStartIndex(t) = (i(t) − N) mod M
 // ring period M·dt̄ > W  (dt̄ ≥ 2 ⇒ M·dt̄ ≥ 131072 > 86400)
+//
+// #26 sqrt_dt(self: TimeSpacing(dt)) → Ray
+// Ray carrier: cfmm_types::Ray (define #32 landed)
+// hole: sqrt_dt body — define phase; law floor(√dt · RAY) via table below
 
 const RING = 65536;
 
@@ -25,3 +31,19 @@ const TimeSpacing = fn (comptime dt: u256) u256 {
 const n = fn (comptime dt: u256) u256 {
     Window() </ TimeSpacing(dt)
 };
+
+/// floor(√dt · RAY) for TimeSpacing domain — comptime table (not getSqrtRatioAtTick).
+const SQRT_DT_RAY_2 = 1414213562373095048801688724;
+const SQRT_DT_RAY_3 = 1732050807568877293527446341;
+const SQRT_DT_RAY_4 = 2000000000000000000000000000;
+const SQRT_DT_RAY_5 = 2236067977499789696409173668;
+const SQRT_DT_RAY_6 = 2449489742783178098197284074;
+const SQRT_DT_RAY_8 = 2828427124746190097603377448;
+const SQRT_DT_RAY_9 = 3000000000000000000000000000;
+const SQRT_DT_RAY_10 = 3162277660168379331998893544;
+
+// hole (type phase): signature only — body in define
+// const sqrt_dt = fn (comptime dt: u256) Ray {
+//     let self = TimeSpacing(dt);
+//     // dispatch SQRT_DT_RAY_* → Ray intro
+// };

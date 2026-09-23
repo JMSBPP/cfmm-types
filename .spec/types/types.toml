@@ -38,3 +38,20 @@ notes = """
 Expansion/Contraction/scaleRay deferred. Independent of TimeSpacing sqrt_dt (#26).
 No Eff. No Weiner bodies. BTT: RayIntro/MulId/AddId/Max.btt.
 """
+
+[TimeSpacing]
+module = "TimeSpacing"
+kind = "dependent"
+file = "types/TimeSpacing/TimeSpacing.md"
+carriers = ["TimeSpacing(dt)", "Ray"]
+operations = ["intro", "n", "sqrt_dt"]
+laws = [
+  "TimeSpacing(dt) total iff dt ∈ {2,3,4,5,6,8,9,10} ∧ N=Window/dt ∈ ℕ ∧ M·dt > Window",
+  "sqrt_dt(TimeSpacing(dt)) = floor(√dt · RAY)  (comptime SQRT_DT_RAY_* table)",
+]
+refined = false
+notes = """
+Domain RealizedVolatility (#26). Ray (#28/#32) available on develop.
+Type phase: SQRT_DT_RAY_* owned; sqrt_dt → Ray signature hole (define next).
+No Eff. No Weiner/Shock bodies.
+"""
