@@ -1,0 +1,15 @@
+# types.toml — RealizedVolatility domain (tracked under .spec/types/)
+# Pointer on modules: -- types.toml: TimeSpacing
+
+[TimeSpacing]
+module = "TimeSpacing"
+kind = "dependent"
+file = "types/TimeSpacing/TimeSpacing.md"
+carriers = ["TimeSpacing(dt)", "Ray"]
+operations = ["intro", "n", "sqrt_dt"]
+laws = [
+  "TimeSpacing(dt) total iff dt ∈ {2,3,4,5,6,8,9,10} ∧ N=Window/dt ∈ ℕ ∧ M·dt > Window",
+  "sqrt_dt(TimeSpacing(dt)) = floor(√dt · RAY)  (comptime SQRT_DT_RAY_* table)",
+]
+refined = false
+notes = "Domain RealizedVolatility (#26). sqrt_dt → Ray blocked on #28 type/Ray; type phase = table ownership + signature hole only. No Eff. No Weiner/Shock bodies."
