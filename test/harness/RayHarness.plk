@@ -1,0 +1,36 @@
+import std::constructor::return_runtime;
+import cfmm_types::Ray::{intro, rayVal, rayMulId, rayAddId, rayMax};
+
+/// intro(uint256)
+const SEL_INTRO = 0xd2a9aa11;
+/// rayMulId()
+const SEL_RAY_MUL_ID = 0xc9e79e2a;
+/// rayAddId()
+const SEL_RAY_ADD_ID = 0xa1184fb3;
+/// rayMax()
+const SEL_RAY_MAX = 0x382800ca;
+
+init { return_runtime(); }
+
+run {
+    let selector = @evm_shr(224, @evm_calldataload(0));
+    if selector == SEL_INTRO {
+        let r = intro(@evm_calldataload(4));
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(r));
+        @evm_return(out, 32);
+    } else if selector == SEL_RAY_MUL_ID {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(rayMulId()));
+        @evm_return(out, 32);
+    } else if selector == SEL_RAY_ADD_ID {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(rayAddId()));
+        @evm_return(out, 32);
+    } else if selector == SEL_RAY_MAX {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(rayMax()));
+        @evm_return(out, 32);
+    }
+    @evm_stop();
+}

@@ -1,0 +1,3 @@
+RayTest
+└── when intro wraps x
+    └── it should return rayVal equal to x

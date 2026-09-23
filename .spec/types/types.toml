@@ -1,24 +1,4 @@
-<<<<<<< HEAD
-# types.toml — Numerics domain (tracked under .spec/types/)
-# Pointer on modules: -- types.toml: Ray
-
-[Ray]
-module = "Ray"
-kind = "plain"
-file = "types/Ray/Ray.md"
-carriers = ["Ray"]
-operations = ["intro", "rayVal", "rayMulId", "rayAddId", "rayMax"]
-laws = [
-  "rayVal(intro(x)) = x",
-  "rayMulId() = intro(RAY_UNIT)",
-  "rayAddId() = intro(RAY_ZERO)",
-  "rayMax() = intro(floor(U256_MAX / RAY_UNIT))",
-  "RAY_UNIT = 10^27",
-]
-refined = false
-notes = "Domain Numerics (#28). Migrate draft RayAlgebra carrier+ids only; Expansion/Contraction/scaleRay deferred. Independent of TimeSpacing sqrt_dt (#26). No Eff. No Weiner bodies."
-=======
-# types.toml — RealizedVolatility / shared lib types under .spec/types/
+# types.toml — shared lib types under .spec/types/
 # Pointer on modules: -- types.toml: <Name>
 
 [Pips]
@@ -38,4 +18,23 @@ notes = """
 PIPS = 1e6 Algebra FEE_DENOMINATOR. No Eff. No Weiner/Shock bodies.
 Define: intro filled; Pips.btt success fit-u16 + overflow revert.
 """
->>>>>>> origin/develop
+
+[Ray]
+module = "Ray"
+kind = "plain"
+file = "types/Ray/Ray.md"
+carriers = ["Ray"]
+operations = ["intro", "rayVal", "rayMulId", "rayAddId", "rayMax"]
+laws = [
+  "rayVal(intro(x)) = x",
+  "rayMulId() = intro(RAY_UNIT)",
+  "rayAddId() = intro(RAY_ZERO)",
+  "rayMax() = intro(floor(U256_MAX / RAY_UNIT))",
+  "RAY_UNIT = 10^27",
+]
+refined = false
+notes = """
+#28/#32 define/Ray. Numerics domain. intro/rayVal/rayMulId/rayAddId/rayMax filled.
+Expansion/Contraction/scaleRay deferred. Independent of TimeSpacing sqrt_dt (#26).
+No Eff. No Weiner bodies. BTT: RayIntro/MulId/AddId/Max.btt.
+"""
