@@ -1,0 +1,3 @@
+RayTest
+└── when rayMax is called
+    └── it should return floor of U256_MAX over RAY_UNIT

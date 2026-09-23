@@ -1,9 +1,14 @@
 // -- types.toml: Ray
-// #28 type/Ray — migrate draft RayAlgebra (carrier + ids). No scaleRay this phase.
+// #28 type/Ray → #32 define/Ray — migrate draft RayAlgebra (carrier + ids).
 // Independent of TimeSpacing SQRT_DT_RAY / sqrt_dt (#26).
 // Import path: cfmm_types::Ray::*
-//
-// hole (define): intro, rayVal, rayMulId, rayAddId, rayMax bodies
+/// Behavior source (define):
+///   .spec/types/Ray/RayIntro.btt
+///   .spec/types/Ray/RayMulId.btt
+///   .spec/types/Ray/RayAddId.btt
+///   .spec/types/Ray/RayMax.btt
+
+import std::core::ops::checked_div_down;
 
 /// Maker-style Ray scale (10^27).
 const RAY_ZERO = 0x0000000000000000000000000000000000000000000000000000000000000000;
@@ -17,8 +22,22 @@ const Ray = struct {
     val: u256
 };
 
-// hole: const intro = fn (x: u256) Ray { Ray { val: x } };
-// hole: const rayVal = fn (self: Ray) u256 { self.val };
-// hole: const rayMulId = fn () Ray { Ray { val: RAY_UNIT } };
-// hole: const rayAddId = fn () Ray { Ray { val: RAY_ZERO } };
-// hole: const rayMax = fn () Ray { Ray { val: checked_div_down(U256_MAX, RAY_UNIT) } };
+const intro = fn (x: u256) Ray {
+    Ray { val: x }
+};
+
+const rayVal = fn (self: Ray) u256 {
+    self.val
+};
+
+const rayMulId = fn () Ray {
+    Ray { val: RAY_UNIT }
+};
+
+const rayAddId = fn () Ray {
+    Ray { val: RAY_ZERO }
+};
+
+const rayMax = fn () Ray {
+    Ray { val: checked_div_down(U256_MAX, RAY_UNIT) }
+};
