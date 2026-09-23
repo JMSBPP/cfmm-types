@@ -1,0 +1,5 @@
+PipsTest
+├── when mulDiv fits u16
+│   └── it should return Pips val equal to floor of v1 times v2 over PIPS
+└── when mulDiv exceeds u16 max
+    └── it should revert
