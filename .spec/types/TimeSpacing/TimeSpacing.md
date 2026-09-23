@@ -28,7 +28,7 @@
 | Candidate | Disposition |
 |-----------|-------------|
 | Extend `TimeSpacing` | **Reuse** — home for `sqrt_dt` + `SQRT_DT_RAY_*` |
-| `Ray` | **Blocked** — [#28](https://github.com/JMSBPP/cfmm-types/issues/28) `type/Ray`; signature import only this phase |
+| `Ray` | **Available** — [#28](https://github.com/JMSBPP/cfmm-types/issues/28)/[#32](https://github.com/JMSBPP/cfmm-types/issues/32) `cfmm_types::Ray` on develop |
 | `Window` / `TimeIndex` / `n(dt)` | **Reject as home** — lattice, not \(\sqrt{dt}\cdot\mathrm{RAY}\) |
 | WeinerGenerator Shock / DeltaW | **Reject** — stay in vol-markets; import from here |
 | std math / sqrt / ray | **Reject** — none present |
@@ -56,6 +56,6 @@
 \end{aligned}
 \]
 
-Plank: `sqrt_dt(self: TimeSpacing(dt)) → Ray`.  
-**Holes this phase:** (1) `Ray` carrier — blocked by [#28](https://github.com/JMSBPP/cfmm-types/issues/28); (2) table dispatch body — define phase.  
+Plank: `sqrt_dt(self: TimeSpacing(dt)) → Ray` (`import cfmm_types::Ray::Ray`).  
+**Hole this phase:** table dispatch body — define phase.  
 Table constants are owned in `src/types/TimeSpacing.plk` so vol-markets can pin `cfmm_types::TimeSpacing` and delete the local WeinerGenerator copies.

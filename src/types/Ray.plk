@@ -1,0 +1,43 @@
+// -- types.toml: Ray
+// #28 type/Ray → #32 define/Ray — migrate draft RayAlgebra (carrier + ids).
+// Independent of TimeSpacing SQRT_DT_RAY / sqrt_dt (#26).
+// Import path: cfmm_types::Ray::*
+/// Behavior source (define):
+///   .spec/types/Ray/RayIntro.btt
+///   .spec/types/Ray/RayMulId.btt
+///   .spec/types/Ray/RayAddId.btt
+///   .spec/types/Ray/RayMax.btt
+
+import std::core::ops::checked_div_down;
+
+/// Maker-style Ray scale (10^27).
+const RAY_ZERO = 0x0000000000000000000000000000000000000000000000000000000000000000;
+const RAY_UNIT = 0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000;
+const RAY_2 = 0x0000000000000000000a70c3c40a64e6c51999090b65f67d9240000000000000;
+
+/// Bound for rayMax: floor(U256_MAX / RAY_UNIT).
+const U256_MAX = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
+
+const Ray = struct {
+    val: u256
+};
+
+const intro = fn (x: u256) Ray {
+    Ray { val: x }
+};
+
+const rayVal = fn (self: Ray) u256 {
+    self.val
+};
+
+const rayMulId = fn () Ray {
+    Ray { val: RAY_UNIT }
+};
+
+const rayAddId = fn () Ray {
+    Ray { val: RAY_ZERO }
+};
+
+const rayMax = fn () Ray {
+    Ray { val: checked_div_down(U256_MAX, RAY_UNIT) }
+};

@@ -1,5 +1,6 @@
 import std::error::comptime_assert;
 import cfmm_types::Window::*;
+import cfmm_types::Ray::Ray;
 
 // -- types.toml: TimeSpacing
 // TimeSpacing ← dt̄ := { dt ∈ u8 | dt ∈ {2,3,4,5,6,8,9,10} }
@@ -12,7 +13,7 @@ import cfmm_types::Window::*;
 // ring period M·dt̄ > W  (dt̄ ≥ 2 ⇒ M·dt̄ ≥ 131072 > 86400)
 //
 // #26 sqrt_dt(self: TimeSpacing(dt)) → Ray
-// hole: Ray — blocked by #28 type/Ray (import cfmm_types::Ray::* when that track lands)
+// Ray carrier: cfmm_types::Ray (define #32 landed)
 // hole: sqrt_dt body — define phase; law floor(√dt · RAY) via table below
 
 const RING = 65536;
@@ -22,8 +23,8 @@ const TimeSpacing = fn (comptime dt: u256) u256 {
         (dt == 2) | (dt == 3) | (dt == 4) | (dt == 5) | (dt == 6) | (dt == 8) | (dt == 9) | (dt == 10),
         "TimeSpacing: dt not in {2,3,4,5,6,8,9,10}"
     );
-    comptime_assert((Window() </ dt) *% dt == Window(), "TimeSpacing: N = Window/dt must be in N");
-    comptime_assert((RING *% dt) > Window(), "TimeSpacing: ring period M*dt must exceed Window");
+    comptime_assert(comptime { (Window() </ dt) *% dt == Window() }, "TimeSpacing: N = Window/dt must be in N");
+    comptime_assert(comptime { (RING *% dt) > Window() }, "TimeSpacing: ring period M*dt must exceed Window");
     dt
 };
 
@@ -41,8 +42,8 @@ const SQRT_DT_RAY_8 = 2828427124746190097603377448;
 const SQRT_DT_RAY_9 = 3000000000000000000000000000;
 const SQRT_DT_RAY_10 = 3162277660168379331998893544;
 
-// hole (type phase): signature only — no body until #28 type/Ray + define
+// hole (type phase): signature only — body in define
 // const sqrt_dt = fn (comptime dt: u256) Ray {
 //     let self = TimeSpacing(dt);
-//     // dispatch SQRT_DT_RAY_* → Ray(self)
+//     // dispatch SQRT_DT_RAY_* → Ray intro
 // };
