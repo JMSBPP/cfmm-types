@@ -1,6 +1,6 @@
 import std::error::comptime_assert;
 import cfmm_types::Window::*;
-import cfmm_types::Ray::Ray;
+import cfmm_types::Ray::{Ray, intro};
 
 // -- types.toml: TimeSpacing
 // TimeSpacing ← dt̄ := { dt ∈ u8 | dt ∈ {2,3,4,5,6,8,9,10} }
@@ -13,8 +13,7 @@ import cfmm_types::Ray::Ray;
 // ring period M·dt̄ > W  (dt̄ ≥ 2 ⇒ M·dt̄ ≥ 131072 > 86400)
 //
 // #26 sqrt_dt(self: TimeSpacing(dt)) → Ray
-// Ray carrier: cfmm_types::Ray (define #32 landed)
-// hole: sqrt_dt body — define phase; law floor(√dt · RAY) via table below
+/// Behavior source (define): .spec/types/TimeSpacing/TimeSpacingSqrtDt.btt
 
 const RING = 65536;
 
@@ -42,8 +41,24 @@ const SQRT_DT_RAY_8 = 2828427124746190097603377448;
 const SQRT_DT_RAY_9 = 3000000000000000000000000000;
 const SQRT_DT_RAY_10 = 3162277660168379331998893544;
 
-// hole (type phase): signature only — body in define
-// const sqrt_dt = fn (comptime dt: u256) Ray {
-//     let self = TimeSpacing(dt);
-//     // dispatch SQRT_DT_RAY_* → Ray intro
-// };
+/// sqrt_dt(self: TimeSpacing(dt)) → Ray = intro(SQRT_DT_RAY_*)
+const sqrt_dt = fn (comptime dt: u256) Ray {
+    let _ = TimeSpacing(dt);
+    if dt == 2 {
+        intro(SQRT_DT_RAY_2)
+    } else if dt == 3 {
+        intro(SQRT_DT_RAY_3)
+    } else if dt == 4 {
+        intro(SQRT_DT_RAY_4)
+    } else if dt == 5 {
+        intro(SQRT_DT_RAY_5)
+    } else if dt == 6 {
+        intro(SQRT_DT_RAY_6)
+    } else if dt == 8 {
+        intro(SQRT_DT_RAY_8)
+    } else if dt == 9 {
+        intro(SQRT_DT_RAY_9)
+    } else {
+        intro(SQRT_DT_RAY_10)
+    }
+};

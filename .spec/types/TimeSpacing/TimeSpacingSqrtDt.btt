@@ -1,0 +1,17 @@
+TimeSpacingTest
+├── when dt is 2
+│   └── it should return SQRT_DT_RAY_2
+├── when dt is 3
+│   └── it should return SQRT_DT_RAY_3
+├── when dt is 4
+│   └── it should return SQRT_DT_RAY_4
+├── when dt is 5
+│   └── it should return SQRT_DT_RAY_5
+├── when dt is 6
+│   └── it should return SQRT_DT_RAY_6
+├── when dt is 8
+│   └── it should return SQRT_DT_RAY_8
+├── when dt is 9
+│   └── it should return SQRT_DT_RAY_9
+└── when dt is 10
+    └── it should return SQRT_DT_RAY_10

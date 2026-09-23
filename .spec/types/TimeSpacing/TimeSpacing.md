@@ -33,7 +33,7 @@
 | WeinerGenerator Shock / DeltaW | **Reject** — stay in vol-markets; import from here |
 | std math / sqrt / ray | **Reject** — none present |
 
-## \(\mathrm{sqrt\_dt}\) (type phase — hole)
+## \(\mathrm{sqrt\_dt}\)
 
 ### \(\mathrm{sqrt\_dt}
 ::
@@ -47,15 +47,20 @@
 \\
 \mathrm{sqrt\_dt}(\bar{dt})
 &=
+\mathrm{intro}\bigl(\mathtt{SQRT\_DT\_RAY}_{\bar{dt}}\bigr)
+\\
+&=
 \big\lfloor \sqrt{\bar{dt}}\,{\cdot}\,\mathrm{RAY} \big\rfloor
 \\
 \bar{dt} &\in \{2,3,4,5,6,8,9,10\}
 \\
-&\text{(comptime table }\mathtt{SQRT\_DT\_RAY\_*}
-\text{; not }\mathtt{getSqrtRatioAtTick}\text{)}
+&\text{(comptime table; not }\mathtt{getSqrtRatioAtTick}\text{)}
 \end{aligned}
 \]
 
-Plank: `sqrt_dt(self: TimeSpacing(dt)) → Ray` (`import cfmm_types::Ray::Ray`).  
-**Hole this phase:** table dispatch body — define phase.  
-Table constants are owned in `src/types/TimeSpacing.plk` so vol-markets can pin `cfmm_types::TimeSpacing` and delete the local WeinerGenerator copies.
+Plank: `sqrt_dt`. BTT: [TimeSpacingSqrtDt.btt](TimeSpacingSqrtDt.btt). Suite: `test/types/TimeSpacing.t.sol`. Harness: `test/harness/TimeSpacingHarness.plk` (`sqrtDt2`…`sqrtDt10` → `rayVal(sqrt_dt(dt))`).
+
+## Export
+
+`cfmm_types::TimeSpacing` — vol-markets WeinerGenerator pins `sqrt_dt` + table (replaces local `SQRT_DT_RAY_*` / `sqrt_dt_ray`).
+

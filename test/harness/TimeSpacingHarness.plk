@@ -1,5 +1,6 @@
 import std::constructor::return_runtime;
 import cfmm_types::TimeSpacing::*;
+import cfmm_types::Ray::rayVal;
 
 // Instantiates the lattice at dt̄ = 2 so constructors run at comptime:
 // N = W / 2 = 43200
@@ -10,6 +11,15 @@ const N = n(2);
 const SEL_N = 0x2e52d606;
 // dt()
 const SEL_DT = 0x3fdb8cbd;
+// sqrtDt2() … sqrtDt10()
+const SEL_SQRT_DT_2 = 0x6b7fb04c;
+const SEL_SQRT_DT_3 = 0xcd322c8d;
+const SEL_SQRT_DT_4 = 0xdfff5f04;
+const SEL_SQRT_DT_5 = 0x8a236e52;
+const SEL_SQRT_DT_6 = 0x59b1f6d2;
+const SEL_SQRT_DT_8 = 0x266af58b;
+const SEL_SQRT_DT_9 = 0xb13919d8;
+const SEL_SQRT_DT_10 = 0x220f912c;
 
 init { return_runtime(); }
 
@@ -23,6 +33,46 @@ run {
     if selector == SEL_DT {
         let out = @malloc_uninit(32);
         @mstore32(out, DT);
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_2 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(2)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_3 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(3)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_4 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(4)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_5 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(5)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_6 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(6)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_8 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(8)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_9 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(9)));
+        @evm_return(out, 32);
+    }
+    if selector == SEL_SQRT_DT_10 {
+        let out = @malloc_uninit(32);
+        @mstore32(out, rayVal(sqrt_dt(10)));
         @evm_return(out, 32);
     }
     @evm_stop();
