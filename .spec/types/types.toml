@@ -1,0 +1,20 @@
+# types.toml — RealizedVolatility / shared lib types under .spec/types/
+# Pointer on modules: -- types.toml: <Name>
+
+[Pips]
+module = "Pips"
+kind = "plain"
+file = "types/Pips/Pips.md"
+carriers = ["Pips", "PIPS"]
+operations = ["intro"]
+laws = [
+  "intro(v1,v2) = Pips{ val: u16(mulDiv(v1,v2,PIPS)) }",
+  "mulDiv(v1,v2,PIPS) ∉ u16 ⇒ revert (⊥)",
+  "Eff = []",
+]
+refined = false
+notes = """
+#27 type/Pips. v1: intro takes untyped u256×u256 (IMPROVE → Ray × mag later).
+PIPS = 1e6 Algebra FEE_DENOMINATOR. No Eff. No Weiner/Shock bodies.
+First .btt (define): success fit-u16 + invalid overflow revert.
+"""

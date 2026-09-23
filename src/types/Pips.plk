@@ -1,0 +1,29 @@
+/// -- types.toml: Pips
+/// Behavior source (define): .spec/types/Pips/Pips.btt
+/// Track: https://github.com/JMSBPP/cfmm-types/issues/27
+///
+/// IMPROVE: v1 `intro` takes two untyped u256 (v1 ≈ Ray-scale √, v2 ≈ shock mag).
+/// Tighten to typed carriers (e.g. Ray × mag) once those tracks land.
+///
+/// Algebra (type phase — signatures / holes only):
+///   PIPS = 10^6
+///   Pips = { val: u16 }
+///   intro(v1,v2) = Pips{ val: u16(mulDiv(v1,v2,PIPS)) }
+///   mulDiv ∉ u16 ⇒ revert
+///   Eff = []
+
+import std::core::uint::u16;
+
+/// Algebra FEE_DENOMINATOR — pip scale (1e6 ≈ 1σ).
+const PIPS = 1000000;
+
+const Pips = struct {
+    val: u16
+};
+
+/// hole: intro body — define phase
+/// law: intro(v1, v2) = Pips { val: u16(mulDiv(v1, v2, PIPS)) }; !fits u16 ⇒ revert
+/// mulDiv := checked_div_down(checked_mul(v1, v2), PIPS)
+// const intro = fn (v1: u256, v2: u256) Pips {
+//     ...
+// };
